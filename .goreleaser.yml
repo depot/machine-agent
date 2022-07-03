@@ -1,7 +1,7 @@
 project_name: build-agent
 
 release:
-  name_template: "{{.Version}}"
+  name_template: "v{{.Version}}"
   prerelease: auto
 
 before:
