@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/depot/builder-agent/pkg/ec2"
 	"github.com/docker/docker/api/types"
@@ -34,7 +35,11 @@ func New() *cobra.Command {
 			}
 
 			ctx := context.Background()
-			imdsClient := imds.New(imds.Options{})
+			cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"))
+			if err != nil {
+				return err
+			}
+			imdsClient := imds.NewFromConfig(cfg)
 			doc, err := imdsClient.GetInstanceIdentityDocument(ctx, &imds.GetInstanceIdentityDocumentInput{})
 			if err != nil {
 				return err
