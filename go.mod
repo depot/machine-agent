@@ -4,7 +4,8 @@ go 1.18
 
 require (
 	github.com/adrg/xdg v0.4.0
-	github.com/aws/aws-sdk-go-v2/ec2imds v0.1.5
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.7
+	github.com/aws/aws-sdk-go-v2/service/autoscaling v1.23.4
 	github.com/charmbracelet/lipgloss v0.5.0
 	github.com/docker/docker v20.10.17+incompatible
 	github.com/getsentry/sentry-go v0.13.0
@@ -15,16 +16,18 @@ require (
 
 require (
 	github.com/Microsoft/go-winio v0.5.2 // indirect
-	github.com/aws/aws-sdk-go-v2 v0.30.0 // indirect
-	github.com/awslabs/smithy-go v0.4.0 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.16.6 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.13 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.7 // indirect
+	github.com/aws/smithy-go v1.12.0 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect

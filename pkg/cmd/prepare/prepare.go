@@ -7,7 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/aws/aws-sdk-go-v2/ec2imds"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	"github.com/depot/builder-agent/pkg/ec2"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
@@ -33,13 +34,19 @@ func New() *cobra.Command {
 			}
 
 			ctx := context.Background()
-			imdsClient := ec2imds.New(ec2imds.Options{})
-			doc, err := imdsClient.GetInstanceIdentityDocument(ctx, &ec2imds.GetInstanceIdentityDocumentInput{})
+			imdsClient := imds.New(imds.Options{})
+			doc, err := imdsClient.GetInstanceIdentityDocument(ctx, &imds.GetInstanceIdentityDocumentInput{})
 			if err != nil {
 				return err
 			}
 
-			fmt.Printf("Instance ID: %s\n", doc.InstanceID)
+			fmt.Printf("Identity: %+v\n", doc)
+
+			asgName := os.Getenv("ASG_NAME")
+			err = ec2.NotifyReady(doc.Region, asgName, "launching", doc.InstanceID)
+			if err != nil {
+				return err
+			}
 
 			return nil
 		},
