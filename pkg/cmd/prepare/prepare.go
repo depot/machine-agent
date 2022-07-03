@@ -45,7 +45,18 @@ func New() *cobra.Command {
 				return err
 			}
 
+			out, err := imdsClient.GetMetadata(ctx, &imds.GetMetadataInput{Path: "autoscaling/target-lifecycle-state"})
+			if err != nil {
+				return err
+			}
+			defer out.Content.Close()
+			bytes, err := io.ReadAll(out.Content)
+			if err != nil {
+				return err
+			}
+
 			fmt.Printf("Identity: %+v\n", doc)
+			fmt.Printf("TargetState: %s\n", string(bytes))
 
 			asgName := os.Getenv("ASG_NAME")
 			err = ec2.NotifyReady(doc.Region, asgName, "launching", doc.InstanceID)
