@@ -1,0 +1,28 @@
+project_name: build-agent
+
+release:
+  name_template: "{{.Version}}"
+  prerelease: auto
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - binary: bin/builder-agent
+    main: ./cmd/builder-agent
+    ldflags:
+      - -s -w -X github.com/depot/builder-agent/internal/build.Version={{.Version}} -X github.com/depot/builder-agent/internal/build.Date={{time "2006-01-02"}} -X github.com/depot/builder-agent/internal/build.SentryEnvironment=release
+    env:
+      - CGO_ENABLED=0
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+
+archives:
+  - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    replacements:
+      darwin: macOS
+    format: tar.gz
+
+changelog:
+  skip: true
