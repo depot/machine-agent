@@ -1,6 +1,7 @@
 package root
 
 import (
+	listenCmd "github.com/depot/builder-agent/pkg/cmd/listen"
 	prepareCmd "github.com/depot/builder-agent/pkg/cmd/prepare"
 	versionCmd "github.com/depot/builder-agent/pkg/cmd/version"
 	"github.com/depot/builder-agent/pkg/config"
@@ -27,6 +28,7 @@ func NewCmdRoot(version, buildDate string) *cobra.Command {
 	cmd.Flags().Bool("version", false, "Print the version and exit")
 
 	// Child commands
+	cmd.AddCommand(listenCmd.New())
 	cmd.AddCommand(prepareCmd.New())
 	cmd.AddCommand(versionCmd.NewCmdVersion(version, buildDate))
 
