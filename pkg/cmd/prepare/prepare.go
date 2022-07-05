@@ -54,14 +54,18 @@ func New() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			targetState := string(bytes)
 
 			fmt.Printf("Identity: %+v\n", doc)
-			fmt.Printf("TargetState: %s\n", string(bytes))
+			fmt.Printf("TargetState: %s\n", targetState)
 
-			asgName := os.Getenv("ASG_NAME")
-			err = ec2.NotifyReady(doc.Region, asgName, "launching", doc.InstanceID)
-			if err != nil {
-				return err
+			// If target state is Warmed:Stopped, signal that preparation is complete
+			if targetState == "Warmed:Stopped" {
+				asgName := os.Getenv("ASG_NAME")
+				err = ec2.NotifyReady(doc.Region, asgName, "launching", doc.InstanceID)
+				if err != nil {
+					return err
+				}
 			}
 
 			return nil
