@@ -10,16 +10,16 @@ type Depot struct {
 	token   string
 }
 
-func NewDepot(baseURL string, token string) *Depot {
+func New(baseURL string, token string) *Depot {
 	return &Depot{BaseURL: baseURL, token: token}
 }
 
-func NewDepotFromEnv(token string) (*Depot, error) {
+func NewFromEnv(token string) *Depot {
 	baseURL := os.Getenv("DEPOT_API_HOST")
 	if baseURL == "" {
 		baseURL = "https://depot.dev"
 	}
-	return NewDepot(baseURL, token), nil
+	return New(baseURL, token)
 }
 
 type ExampleResponse struct {
@@ -34,4 +34,19 @@ func (d *Depot) Example(id string) error {
 		map[string]string{},
 	)
 	return err
+}
+
+type RegisterAwsBuilderResponse struct {
+	OK    bool   `json:"ok"`
+	Token string `json:"token"`
+	Role  string `json:"role"`
+}
+
+func (d *Depot) RegisterAwsBuilder(document, signature string) (*RegisterAwsBuilderResponse, error) {
+	return apiRequest[RegisterAwsBuilderResponse](
+		"POST",
+		fmt.Sprintf("%s/api/internal/aws/builder/register", d.BaseURL),
+		d.token,
+		map[string]string{"document": document, "signature": signature},
+	)
 }
