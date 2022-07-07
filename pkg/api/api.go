@@ -36,17 +36,23 @@ func (d *Depot) Example(id string) error {
 	return err
 }
 
+type RegisterAwsBuilderRequest struct {
+	Document  string `json:"document"`
+	Signature string `json:"signature"`
+	ASG       string `json:"asg"`
+}
+
 type RegisterAwsBuilderResponse struct {
 	OK    bool   `json:"ok"`
 	Token string `json:"token"`
 	Role  string `json:"role"`
 }
 
-func (d *Depot) RegisterAwsBuilder(document, signature string) (*RegisterAwsBuilderResponse, error) {
+func (d *Depot) RegisterAwsBuilder(request RegisterAwsBuilderRequest) (*RegisterAwsBuilderResponse, error) {
 	return apiRequest[RegisterAwsBuilderResponse](
 		"POST",
 		fmt.Sprintf("%s/api/internal/aws/builder/register", d.BaseURL),
 		d.token,
-		map[string]string{"document": document, "signature": signature},
+		request,
 	)
 }

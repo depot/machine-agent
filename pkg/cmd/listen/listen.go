@@ -43,7 +43,11 @@ func New() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			res, err := client.RegisterAwsBuilder(doc, signature)
+			res, err := client.RegisterAwsBuilder(api.RegisterAwsBuilderRequest{
+				Document:  doc,
+				Signature: signature,
+				ASG:       os.Getenv("ASG_NAME"),
+			})
 			if err != nil {
 				return err
 			}
