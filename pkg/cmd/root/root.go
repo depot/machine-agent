@@ -1,17 +1,17 @@
 package root
 
 import (
-	listenCmd "github.com/depot/builder-agent/pkg/cmd/listen"
-	prepareCmd "github.com/depot/builder-agent/pkg/cmd/prepare"
-	versionCmd "github.com/depot/builder-agent/pkg/cmd/version"
-	"github.com/depot/builder-agent/pkg/config"
+	listenCmd "github.com/depot/machine-agent/pkg/cmd/listen"
+	prepareCmd "github.com/depot/machine-agent/pkg/cmd/prepare"
+	versionCmd "github.com/depot/machine-agent/pkg/cmd/version"
+	"github.com/depot/machine-agent/pkg/config"
 	"github.com/spf13/cobra"
 )
 
 func NewCmdRoot(version, buildDate string) *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:          "builder-agent <command> [flags]",
-		Short:        "Depot builder agent",
+		Use:          "machine-agent <command> [flags]",
+		Short:        "Depot machine agent",
 		SilenceUsage: true,
 
 		Run: func(cmd *cobra.Command, args []string) {

@@ -1,4 +1,4 @@
-project_name: builder-agent
+project_name: machine-agent
 
 release:
   name_template: "v{{.Version}}"
@@ -9,10 +9,10 @@ before:
     - go mod tidy
 
 builds:
-  - binary: bin/builder-agent
-    main: ./cmd/builder-agent
+  - binary: bin/machine-agent
+    main: ./cmd/machine-agent
     ldflags:
-      - -s -w -X github.com/depot/builder-agent/internal/build.Version={{.Version}} -X github.com/depot/builder-agent/internal/build.Date={{time "2006-01-02"}} -X github.com/depot/builder-agent/internal/build.SentryEnvironment=release
+      - -s -w -X github.com/depot/machine-agent/internal/build.Version={{.Version}} -X github.com/depot/machine-agent/internal/build.Date={{time "2006-01-02"}} -X github.com/depot/machine-agent/internal/build.SentryEnvironment=release
     env:
       - CGO_ENABLED=0
     goos: [darwin, linux]

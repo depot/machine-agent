@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/depot/builder-agent/pkg/docker"
-	"github.com/depot/builder-agent/pkg/ec2"
+	"github.com/depot/machine-agent/pkg/docker"
+	"github.com/depot/machine-agent/pkg/ec2"
 	"github.com/spf13/cobra"
 )
 

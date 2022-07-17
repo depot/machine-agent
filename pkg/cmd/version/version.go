@@ -28,7 +28,7 @@ func Format(version, buildDate string) string {
 }
 
 func changelogURL(version string) string {
-	path := "https://github.com/depot/builder-agent"
+	path := "https://github.com/depot/machine-agent"
 	r := regexp.MustCompile(`^v?\d+\.\d+\.\d+(-[\w.]+)?$`)
 	if !r.MatchString(version) {
 		return fmt.Sprintf("%s/releases/latest", path)

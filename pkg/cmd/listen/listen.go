@@ -8,8 +8,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
-	"github.com/depot/builder-agent/pkg/api"
-	"github.com/depot/builder-agent/pkg/ec2"
+	"github.com/depot/machine-agent/pkg/api"
+	"github.com/depot/machine-agent/pkg/ec2"
 	"github.com/spf13/cobra"
 )
 

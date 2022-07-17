@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/depot/builder-agent/internal/build"
-	"github.com/depot/builder-agent/pkg/cmd/root"
+	"github.com/depot/machine-agent/internal/build"
+	"github.com/depot/machine-agent/pkg/cmd/root"
 	"github.com/getsentry/sentry-go"
 )
 

@@ -1,4 +1,4 @@
-module github.com/depot/builder-agent
+module github.com/depot/machine-agent
 
 go 1.18
 

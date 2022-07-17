@@ -10,7 +10,7 @@ import (
 	"runtime"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/depot/builder-agent/internal/build"
+	"github.com/depot/machine-agent/internal/build"
 	"github.com/pkg/errors"
 )
 
