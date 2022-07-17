@@ -46,22 +46,3 @@ func GetSignedIdentity() (string, string, error) {
 	}
 	return string(document), string(signature), nil
 }
-
-func GetTargetState() (string, error) {
-	ctx := context.Background()
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return "", err
-	}
-	imdsClient := imds.NewFromConfig(cfg)
-	out, err := imdsClient.GetMetadata(ctx, &imds.GetMetadataInput{Path: "autoscaling/target-lifecycle-state"})
-	if err != nil {
-		return "", err
-	}
-	defer out.Content.Close()
-	bytes, err := io.ReadAll(out.Content)
-	if err != nil {
-		return "", err
-	}
-	return string(bytes), nil
-}

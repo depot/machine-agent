@@ -1,13 +1,9 @@
 package listen
 
 import (
-	"context"
 	"fmt"
 	"net/http"
-	"os"
 
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/depot/machine-agent/pkg/api"
 	"github.com/depot/machine-agent/pkg/ec2"
 	"github.com/spf13/cobra"
@@ -23,30 +19,13 @@ func New() *cobra.Command {
 				fmt.Fprintf(w, "Hello world")
 			})
 
-			// Signal to the ASG that we are ready
-			asgName := os.Getenv("ASG_NAME")
-			if asgName != "" {
-				ctx := context.Background()
-				cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"))
-				if err != nil {
-					return err
-				}
-				imdsClient := imds.NewFromConfig(cfg)
-				doc, err := imdsClient.GetInstanceIdentityDocument(ctx, &imds.GetInstanceIdentityDocumentInput{})
-				if err != nil {
-					return err
-				}
-				_ = ec2.NotifyReady(doc.Region, asgName, "launching", doc.InstanceID)
-			}
-
 			doc, signature, err := ec2.GetSignedIdentity()
 			if err != nil {
 				return err
 			}
-			res, err := client.RegisterAwsBuilder(api.RegisterAwsBuilderRequest{
+			res, err := client.RegisterMachine(api.RegisterMachineRequest{
 				Document:  doc,
 				Signature: signature,
-				ASG:       os.Getenv("ASG_NAME"),
 			})
 			if err != nil {
 				return err

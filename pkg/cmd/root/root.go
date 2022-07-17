@@ -2,7 +2,6 @@ package root
 
 import (
 	listenCmd "github.com/depot/machine-agent/pkg/cmd/listen"
-	prepareCmd "github.com/depot/machine-agent/pkg/cmd/prepare"
 	versionCmd "github.com/depot/machine-agent/pkg/cmd/version"
 	"github.com/depot/machine-agent/pkg/config"
 	"github.com/spf13/cobra"
@@ -29,7 +28,6 @@ func NewCmdRoot(version, buildDate string) *cobra.Command {
 
 	// Child commands
 	cmd.AddCommand(listenCmd.New())
-	cmd.AddCommand(prepareCmd.New())
 	cmd.AddCommand(versionCmd.NewCmdVersion(version, buildDate))
 
 	return cmd
