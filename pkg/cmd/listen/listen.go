@@ -24,6 +24,7 @@ func New() *cobra.Command {
 				return err
 			}
 			res, err := client.RegisterMachine(api.RegisterMachineRequest{
+				Cloud:     "aws",
 				Document:  doc,
 				Signature: signature,
 			})

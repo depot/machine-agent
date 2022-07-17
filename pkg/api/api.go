@@ -37,20 +37,27 @@ func (d *Depot) Example(id string) error {
 }
 
 type RegisterMachineRequest struct {
+	Cloud     string `json:"cloud"`
 	Document  string `json:"document"`
 	Signature string `json:"signature"`
 }
 
 type RegisterMachineResponse struct {
-	OK    bool   `json:"ok"`
-	Token string `json:"token"`
-	Role  string `json:"role"`
+	OK     bool    `json:"ok"`
+	Token  string  `json:"token"`
+	Role   string  `json:"role"`
+	Mounts []Mount `json:"mounts"`
+}
+
+type Mount struct {
+	Path   string `json:"path"`
+	Device string `json:"device"`
 }
 
 func (d *Depot) RegisterMachine(request RegisterMachineRequest) (*RegisterMachineResponse, error) {
 	return apiRequest[RegisterMachineResponse](
 		"POST",
-		fmt.Sprintf("%s/api/internal/machines/register", d.BaseURL),
+		fmt.Sprintf("%s/api/agents/machine/register", d.BaseURL),
 		d.token,
 		request,
 	)
