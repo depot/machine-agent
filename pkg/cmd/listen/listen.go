@@ -1,6 +1,7 @@
 package listen
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/depot/machine-agent/pkg/api"
+	"github.com/depot/machine-agent/pkg/buildkit"
 	"github.com/depot/machine-agent/pkg/ec2"
 	"github.com/depot/machine-agent/pkg/mounts"
 	"github.com/spf13/cobra"
@@ -81,6 +83,47 @@ enabled = false
 				if err != nil {
 					return err
 				}
+
+				buildkitClient, err := buildkit.NewClient(context.Background(), "tcp://127.0.0.1:8080", &buildkit.TlsOpts{
+					ServerName: "localhost",
+					Cert:       "/etc/buildkit/tls.crt",
+					Key:        "/etc/buildkit/tls.key",
+					CACert:     "/etc/buildkit/tlsca.crt",
+				})
+				if err != nil {
+					return err
+				}
+
+				go func() {
+					for {
+						info, err := buildkitClient.ListWorkers(context.Background())
+						if err != nil {
+							fmt.Printf("error listing workers: %v\n", err)
+						} else {
+							fmt.Printf("workers: %+v\n", info)
+							res, err := client.ReportHealth(api.ReportHealthRequest{
+								Cloud:     "aws",
+								Document:  doc,
+								Signature: signature,
+								State:     "active",
+							})
+							if err != nil {
+								fmt.Printf("error reporting health: %v\n", err)
+							} else {
+								fmt.Printf("reported health: %+v\n", res)
+								// TODO: shutdown
+								if res.DesiredState == "stopped" || res.DesiredState == "terminated" {
+									err := exec.Command("shutdown", "-h", "now").Run()
+									if err != nil {
+										fmt.Printf("error shutting down: %v\n", err)
+									}
+								}
+							}
+						}
+
+						<-time.After(time.Second)
+					}
+				}()
 
 				for {
 					cmd := exec.Command("/usr/bin/buildkitd")

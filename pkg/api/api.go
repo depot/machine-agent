@@ -65,3 +65,24 @@ func (d *Depot) RegisterMachine(request RegisterMachineRequest) (*RegisterMachin
 		request,
 	)
 }
+
+type ReportHealthRequest struct {
+	Cloud     string `json:"cloud"`
+	Document  string `json:"document"`
+	Signature string `json:"signature"`
+	State     string `json:"state"`
+}
+
+type ReportHealthResponse struct {
+	OK           bool   `json:"ok"`
+	DesiredState string `json:"desiredState"`
+}
+
+func (d *Depot) ReportHealth(request ReportHealthRequest) (*ReportHealthResponse, error) {
+	return apiRequest[ReportHealthResponse](
+		"POST",
+		fmt.Sprintf("%s/api/agents/machine/health", d.BaseURL),
+		d.token,
+		request,
+	)
+}
