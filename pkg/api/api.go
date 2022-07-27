@@ -44,9 +44,12 @@ type RegisterMachineRequest struct {
 
 type RegisterMachineResponse struct {
 	OK     bool    `json:"ok"`
-	Token  string  `json:"token"`
 	Role   string  `json:"role"`
 	Mounts []Mount `json:"mounts"`
+	Token  string  `json:"token,omitempty"`
+	CaCert string  `json:"caCert,omitempty"`
+	Cert   string  `json:"cert,omitempty"`
+	Key    string  `json:"key,omitempty"`
 }
 
 type Mount struct {
