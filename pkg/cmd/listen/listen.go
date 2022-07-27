@@ -61,29 +61,6 @@ func New() *cobra.Command {
 					return err
 				}
 
-				err = os.WriteFile("/etc/buildkit/buildkitd.toml", []byte(`
-root = "/var/lib/buildkit"
-
-[grpc]
-address = ["tcp://0.0.0.0:8080"]
-[grpc.tls]
-cert = "/etc/buildkit/tls.crt"
-key = "/etc/buildkit/tls.key"
-ca = "/etc/buildkit/tlsca.crt"
-
-[worker.oci]
-enabled = true
-gc = true
-gckeepstorage = 45000000000 # 45GB
-
-[worker.containerd]
-enabled = false
-`), 0644)
-
-				if err != nil {
-					return err
-				}
-
 				buildkitClient, err := buildkit.NewClient(context.Background(), "tcp://127.0.0.1:8080", &buildkit.TlsOpts{
 					ServerName: "localhost",
 					Cert:       "/etc/buildkit/tls.crt",
