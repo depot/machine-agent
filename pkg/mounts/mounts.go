@@ -38,6 +38,10 @@ func EnsureMounted(device, path string) error {
 	if res.Stdout == "" {
 		log.Printf("Creating filesystem on %s\n", device)
 		res, err = exec.Exec("mkfs", []string{"-t", "ext4", "-T", "news", realDevice}, "")
+		if err != nil {
+			return err
+		}
+		log.Printf("%s\n", res.Stderr)
 	}
 
 	log.Printf("Mounting %s at %s\n", device, path)

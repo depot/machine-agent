@@ -46,11 +46,20 @@ func New() *cobra.Command {
 			}
 
 			if res.Role == "buildkit" {
-				os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Cert), 0644)
-				os.WriteFile("/etc/buildkit/tls.key", []byte(res.Key), 0644)
-				os.WriteFile("/etc/buildkit/tlsca.crt", []byte(res.CaCert), 0644)
+				err = os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Cert), 0644)
+				if err != nil {
+					return err
+				}
+				err = os.WriteFile("/etc/buildkit/tls.key", []byte(res.Key), 0644)
+				if err != nil {
+					return err
+				}
+				err = os.WriteFile("/etc/buildkit/tlsca.crt", []byte(res.CaCert), 0644)
+				if err != nil {
+					return err
+				}
 
-				os.WriteFile("/etc/buildkit/buildkitd.toml", []byte(`
+				err = os.WriteFile("/etc/buildkit/buildkitd.toml", []byte(`
 root = "/var/lib/buildkit"
 
 [grpc]
@@ -68,6 +77,10 @@ gckeepstorage = 45000000000 # 45GB
 [worker.containerd]
 enabled = false
 `), 0644)
+
+				if err != nil {
+					return err
+				}
 
 				for {
 					cmd := exec.Command("/usr/bin/buildkitd")
