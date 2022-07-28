@@ -65,7 +65,11 @@ func WaitForDevice(device string) error {
 		log.Printf("Waiting for device %s\n", device)
 		path, err := os.Readlink(device)
 		if err == nil {
-			if info, err := os.Stat(path); err == nil && info.Mode()&os.ModeDevice != 0 {
+			info, err := os.Stat(path)
+			fmt.Printf("%+v\n", info)
+			fmt.Printf("%+v\n", err)
+			fmt.Printf("%+v\n", info.Mode()&os.ModeDevice)
+			if err == nil && info.Mode()&os.ModeDevice != 0 {
 				return nil
 			}
 		}
