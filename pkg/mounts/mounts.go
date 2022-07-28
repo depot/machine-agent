@@ -32,10 +32,7 @@ func EnsureMounted(device, path string) error {
 		return nil
 	}
 
-	res, err := exec.Exec("blkid", []string{realDevice}, "")
-	if err != nil {
-		return err
-	}
+	res, _ := exec.Exec("blkid", []string{realDevice}, "")
 	if res.Stdout == "" {
 		log.Printf("Creating filesystem on %s\n", device)
 		res, err = exec.Exec("mkfs", []string{"-t", "ext4", "-T", "news", realDevice}, "")
