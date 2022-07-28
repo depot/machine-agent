@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"time"
 
@@ -63,7 +64,7 @@ func EnsureMounted(device, path string) error {
 func WaitForDevice(device string) error {
 	for {
 		log.Printf("Waiting for device %s\n", device)
-		path, err := os.Readlink(device)
+		path, err := filepath.EvalSymlinks(device)
 		if err == nil {
 			info, err := os.Stat(path)
 			fmt.Printf("%+v\n", path)
