@@ -17,7 +17,7 @@ func EnsureMounted(device, path string) error {
 		return err
 	}
 
-	realDevice, err := os.Readlink(device)
+	realDevice, err := filepath.EvalSymlinks(device)
 	if err != nil {
 		return err
 	}
