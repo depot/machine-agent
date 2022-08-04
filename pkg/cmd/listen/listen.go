@@ -38,7 +38,9 @@ func New() *cobra.Command {
 				return err
 			}
 
-			fmt.Printf("Registered builder: %+v\n", res)
+			fmt.Printf("Registered machine: %+v\n", res)
+			machineID := res.ID
+			client = api.NewFromEnv(res.Token)
 
 			for _, mount := range res.Mounts {
 				err := mounts.EnsureMounted(mount.Device, mount.Path)
@@ -47,7 +49,7 @@ func New() *cobra.Command {
 				}
 			}
 
-			if res.Role == "buildkit" {
+			if res.Kind == "buildkit" {
 				err = os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Cert), 0644)
 				if err != nil {
 					return err
@@ -78,18 +80,12 @@ func New() *cobra.Command {
 							fmt.Printf("error listing workers: %v\n", err)
 						} else {
 							fmt.Printf("workers: %+v\n", info)
-							res, err := client.ReportHealth(api.ReportHealthRequest{
-								Cloud:     "aws",
-								Document:  doc,
-								Signature: signature,
-								State:     "active",
-							})
+							res, err := client.ReportHealth(machineID)
 							if err != nil {
 								fmt.Printf("error reporting health: %v\n", err)
 							} else {
 								fmt.Printf("reported health: %+v\n", res)
-								// TODO: shutdown
-								if res.DesiredState == "stopped" || res.DesiredState == "terminated" {
+								if res.ShouldTerminate {
 									err := exec.Command("shutdown", "-h", "now").Run()
 									if err != nil {
 										fmt.Printf("error shutting down: %v\n", err)

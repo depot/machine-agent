@@ -6,34 +6,22 @@ import (
 )
 
 type Depot struct {
-	BaseURL string
-	token   string
+	BaseURL      string
+	connectionID string
+	token        string
 }
 
-func New(baseURL string, token string) *Depot {
-	return &Depot{BaseURL: baseURL, token: token}
+func New(baseURL string, connectionID string, token string) *Depot {
+	return &Depot{BaseURL: baseURL, connectionID: connectionID, token: token}
 }
 
 func NewFromEnv(token string) *Depot {
-	baseURL := os.Getenv("DEPOT_API_HOST")
+	baseURL := os.Getenv("DEPOT_CLOUD_API_HOST")
 	if baseURL == "" {
-		baseURL = "https://depot.dev"
+		baseURL = "https://cloud.depot.dev"
 	}
-	return New(baseURL, token)
-}
-
-type ExampleResponse struct {
-	OK bool `json:"ok"`
-}
-
-func (d *Depot) Example(id string) error {
-	_, err := apiRequest[ExampleResponse](
-		"DELETE",
-		fmt.Sprintf("%s/api/internal/example/%s", d.BaseURL, id),
-		d.token,
-		map[string]string{},
-	)
-	return err
+	connectionID := os.Getenv("DEPOT_CLOUD_CONNECTION_ID")
+	return New(baseURL, connectionID, token)
 }
 
 type RegisterMachineRequest struct {
@@ -44,7 +32,8 @@ type RegisterMachineRequest struct {
 
 type RegisterMachineResponse struct {
 	OK     bool    `json:"ok"`
-	Role   string  `json:"role"`
+	ID     string  `json:"id"`
+	Kind   string  `json:"kind"`
 	Mounts []Mount `json:"mounts"`
 	Token  string  `json:"token,omitempty"`
 	CaCert string  `json:"caCert,omitempty"`
@@ -60,29 +49,27 @@ type Mount struct {
 func (d *Depot) RegisterMachine(request RegisterMachineRequest) (*RegisterMachineResponse, error) {
 	return apiRequest[RegisterMachineResponse](
 		"POST",
-		fmt.Sprintf("%s/api/agents/machine/register", d.BaseURL),
+		fmt.Sprintf("%s/connections/%s/register-machine", d.BaseURL, d.connectionID),
 		d.token,
 		request,
 	)
 }
 
-type ReportHealthRequest struct {
-	Cloud     string `json:"cloud"`
-	Document  string `json:"document"`
-	Signature string `json:"signature"`
-	State     string `json:"state"`
-}
-
 type ReportHealthResponse struct {
-	OK           bool   `json:"ok"`
-	DesiredState string `json:"desiredState"`
+	OK              bool   `json:"ok"`
+	ID              string `json:"id"`
+	Realm           string `json:"realm"`
+	Kind            string `json:"kind"`
+	Architecture    string `json:"architecture"`
+	Ephemeral       bool   `json:"ephemeral"`
+	ShouldTerminate bool   `json:"shouldTerminate"`
 }
 
-func (d *Depot) ReportHealth(request ReportHealthRequest) (*ReportHealthResponse, error) {
+func (d *Depot) ReportHealth(machineID string) (*ReportHealthResponse, error) {
 	return apiRequest[ReportHealthResponse](
-		"POST",
-		fmt.Sprintf("%s/api/agents/machine/health", d.BaseURL),
+		"GET",
+		fmt.Sprintf("%s/machines/%s", d.BaseURL, machineID),
 		d.token,
-		request,
+		nil,
 	)
 }
