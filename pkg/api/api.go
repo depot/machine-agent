@@ -61,7 +61,6 @@ type ReportHealthResponse struct {
 	Realm           string `json:"realm"`
 	Kind            string `json:"kind"`
 	Architecture    string `json:"architecture"`
-	Ephemeral       bool   `json:"ephemeral"`
 	ShouldTerminate bool   `json:"shouldTerminate"`
 }
 
