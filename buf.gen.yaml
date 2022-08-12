@@ -11,6 +11,6 @@ plugins:
   - remote: buf.build/protocolbuffers/plugins/go
     out: pkg/proto
     opt: paths=source_relative
-  - emote: buf.build/demolab/plugins/twirp:v8.1.2-1
+  - remote: buf.build/demolab/plugins/twirp:v8.1.2-1
     out: pkg/proto
     opt: paths=source_relative
