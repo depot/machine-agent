@@ -1,0 +1,16 @@
+version: v1
+
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/depot/machine-agent/pkg/proto
+    except:
+      - buf.build/googleapis/googleapis
+
+plugins:
+  - remote: buf.build/protocolbuffers/plugins/go
+    out: pkg/proto
+    opt: paths=source_relative
+  - emote: buf.build/demolab/plugins/twirp:v8.1.2-1
+    out: pkg/proto
+    opt: paths=source_relative

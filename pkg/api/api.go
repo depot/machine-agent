@@ -1,74 +1,34 @@
 package api
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"os"
+	"runtime"
+
+	"github.com/depot/machine-agent/internal/build"
+	cloudv1 "github.com/depot/machine-agent/pkg/proto/depot/cloud/v1"
+	"github.com/twitchtv/twirp"
 )
 
-type Depot struct {
-	BaseURL      string
-	connectionID string
-	token        string
-}
-
-func New(baseURL string, connectionID string, token string) *Depot {
-	return &Depot{BaseURL: baseURL, connectionID: connectionID, token: token}
-}
-
-func NewFromEnv(token string) *Depot {
+func NewRPCFromEnv() cloudv1.MachineService {
 	baseURL := os.Getenv("DEPOT_CLOUD_API_HOST")
 	if baseURL == "" {
 		baseURL = "https://cloud.depot.dev"
 	}
-	connectionID := os.Getenv("DEPOT_CLOUD_CONNECTION_ID")
-	return New(baseURL, connectionID, token)
+	return cloudv1.NewMachineServiceProtobufClient(baseURL, &http.Client{}, twirp.WithClientPathPrefix("/rpc"))
 }
 
-type RegisterMachineRequest struct {
-	Cloud     string `json:"cloud"`
-	Document  string `json:"document"`
-	Signature string `json:"signature"`
+func GetConnectionID() string {
+	return os.Getenv("DEPOT_CLOUD_CONNECTION_ID")
 }
 
-type RegisterMachineResponse struct {
-	OK     bool    `json:"ok"`
-	ID     string  `json:"id"`
-	Kind   string  `json:"kind"`
-	Mounts []Mount `json:"mounts"`
-	Token  string  `json:"token,omitempty"`
-	CaCert string  `json:"caCert,omitempty"`
-	Cert   string  `json:"cert,omitempty"`
-	Key    string  `json:"key,omitempty"`
-}
-
-type Mount struct {
-	Path   string `json:"path"`
-	Device string `json:"device"`
-}
-
-func (d *Depot) RegisterMachine(request RegisterMachineRequest) (*RegisterMachineResponse, error) {
-	return apiRequest[RegisterMachineResponse](
-		"POST",
-		fmt.Sprintf("%s/connections/%s/register-machine", d.BaseURL, d.connectionID),
-		d.token,
-		request,
-	)
-}
-
-type ReportHealthResponse struct {
-	OK              bool   `json:"ok"`
-	ID              string `json:"id"`
-	Realm           string `json:"realm"`
-	Kind            string `json:"kind"`
-	Architecture    string `json:"architecture"`
-	ShouldTerminate bool   `json:"shouldTerminate"`
-}
-
-func (d *Depot) ReportHealth(machineID string) (*ReportHealthResponse, error) {
-	return apiRequest[ReportHealthResponse](
-		"GET",
-		fmt.Sprintf("%s/machines/%s", d.BaseURL, machineID),
-		d.token,
-		nil,
-	)
+func WithHeaders(ctx context.Context, token string) (context.Context, error) {
+	header := make(http.Header)
+	header.Set("User-Agent", fmt.Sprintf("depot-cli/%s/%s/%s", build.Version, runtime.GOOS, runtime.GOARCH))
+	if token != "" {
+		header.Set("Authorization", "Bearer "+token)
+	}
+	return twirp.WithHTTPRequestHeaders(ctx, header)
 }

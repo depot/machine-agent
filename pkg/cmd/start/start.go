@@ -1,8 +1,9 @@
-package listen
+package start
 
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -12,14 +13,15 @@ import (
 	"github.com/depot/machine-agent/pkg/buildkit"
 	"github.com/depot/machine-agent/pkg/ec2"
 	"github.com/depot/machine-agent/pkg/mounts"
+	cloudv1 "github.com/depot/machine-agent/pkg/proto/depot/cloud/v1"
 	"github.com/spf13/cobra"
 )
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "listen",
+		Use: "start",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client := api.NewFromEnv("")
+			client := api.NewRPCFromEnv()
 
 			http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintf(w, "Hello world")
@@ -29,18 +31,24 @@ func New() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			res, err := client.RegisterMachine(api.RegisterMachineRequest{
-				Cloud:     "aws",
-				Document:  doc,
-				Signature: signature,
+
+			ctx, err := api.WithHeaders(context.Background(), "")
+			if err != nil {
+				return err
+			}
+
+			res, err := client.RegisterMachine(ctx, &cloudv1.RegisterMachineRequest{
+				ConnectionId: api.GetConnectionID(),
+				Cloud:        cloudv1.RegisterMachineRequest_CLOUD_AWS,
+				Document:     doc,
+				Signature:    signature,
 			})
 			if err != nil {
 				return err
 			}
 
 			fmt.Printf("Registered machine: %+v\n", res)
-			machineID := res.ID
-			client = api.NewFromEnv(res.Token)
+			machineID := res.MachineId
 
 			for _, mount := range res.Mounts {
 				err := mounts.EnsureMounted(mount.Device, mount.Path)
@@ -49,16 +57,16 @@ func New() *cobra.Command {
 				}
 			}
 
-			if res.Kind == "buildkit" {
-				err = os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Cert), 0644)
+			if res.Kind == cloudv1.RegisterMachineResponse_KIND_BUILDKIT {
+				err = os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Cert.Cert), 0644)
 				if err != nil {
 					return err
 				}
-				err = os.WriteFile("/etc/buildkit/tls.key", []byte(res.Key), 0644)
+				err = os.WriteFile("/etc/buildkit/tls.key", []byte(res.Cert.Key), 0644)
 				if err != nil {
 					return err
 				}
-				err = os.WriteFile("/etc/buildkit/tlsca.crt", []byte(res.CaCert), 0644)
+				err = os.WriteFile("/etc/buildkit/tlsca.crt", []byte(res.CaCert.Cert), 0644)
 				if err != nil {
 					return err
 				}
@@ -73,6 +81,8 @@ func New() *cobra.Command {
 					return err
 				}
 
+				token := res.Token
+
 				go func() {
 					for {
 						info, err := buildkitClient.ListWorkers(context.Background())
@@ -80,7 +90,11 @@ func New() *cobra.Command {
 							fmt.Printf("error listing workers: %v\n", err)
 						} else {
 							fmt.Printf("workers: %+v\n", info)
-							res, err := client.ReportHealth(machineID)
+							ctx, err := api.WithHeaders(context.Background(), token)
+							if err != nil {
+								log.Printf("error setting headers: %v", err)
+							}
+							res, err := client.PingMachineHealth(ctx, &cloudv1.PingMachineHealthRequest{MachineId: machineID})
 							if err != nil {
 								fmt.Printf("error reporting health: %v\n", err)
 							} else {
