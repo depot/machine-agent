@@ -6,13 +6,13 @@ require (
 	github.com/adrg/xdg v0.4.0
 	github.com/aws/aws-sdk-go-v2/config v1.15.12
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.7
+	github.com/bufbuild/connect-go v0.4.0
 	github.com/docker/docker v20.10.17+incompatible
 	github.com/getsentry/sentry-go v0.13.0
 	github.com/moby/buildkit v0.10.3
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1
-	github.com/twitchtv/twirp v8.1.2+incompatible
-	google.golang.org/protobuf v1.27.1
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
