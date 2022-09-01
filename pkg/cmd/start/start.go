@@ -3,12 +3,12 @@ package start
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"time"
 
+	"github.com/bufbuild/connect-go"
 	"github.com/depot/machine-agent/pkg/api"
 	"github.com/depot/machine-agent/pkg/buildkit"
 	"github.com/depot/machine-agent/pkg/ec2"
@@ -32,41 +32,42 @@ func New() *cobra.Command {
 				return err
 			}
 
-			ctx, err := api.WithHeaders(context.Background(), "")
-			if err != nil {
-				return err
-			}
-
-			res, err := client.RegisterMachine(ctx, &cloudv1.RegisterMachineRequest{
-				ConnectionId: api.GetConnectionID(),
-				Cloud:        cloudv1.RegisterMachineRequest_CLOUD_AWS,
-				Document:     doc,
-				Signature:    signature,
-			})
+			res, err := client.RegisterMachine(
+				context.Background(),
+				api.WithHeaders(
+					connect.NewRequest(&cloudv1.RegisterMachineRequest{
+						ConnectionId: api.GetConnectionID(),
+						Cloud:        cloudv1.RegisterMachineRequest_CLOUD_AWS,
+						Document:     doc,
+						Signature:    signature,
+					}),
+					"",
+				),
+			)
 			if err != nil {
 				return err
 			}
 
 			fmt.Printf("Registered machine: %+v\n", res)
-			machineID := res.MachineId
+			machineID := res.Msg.MachineId
 
-			for _, mount := range res.Mounts {
+			for _, mount := range res.Msg.Mounts {
 				err := mounts.EnsureMounted(mount.Device, mount.Path)
 				if err != nil {
 					return err
 				}
 			}
 
-			if res.Kind == cloudv1.RegisterMachineResponse_KIND_BUILDKIT {
-				err = os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Cert.Cert), 0644)
+			if res.Msg.Kind == cloudv1.RegisterMachineResponse_KIND_BUILDKIT {
+				err = os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Msg.Cert.Cert), 0644)
 				if err != nil {
 					return err
 				}
-				err = os.WriteFile("/etc/buildkit/tls.key", []byte(res.Cert.Key), 0644)
+				err = os.WriteFile("/etc/buildkit/tls.key", []byte(res.Msg.Cert.Key), 0644)
 				if err != nil {
 					return err
 				}
-				err = os.WriteFile("/etc/buildkit/tlsca.crt", []byte(res.CaCert.Cert), 0644)
+				err = os.WriteFile("/etc/buildkit/tlsca.crt", []byte(res.Msg.CaCert.Cert), 0644)
 				if err != nil {
 					return err
 				}
@@ -81,7 +82,7 @@ func New() *cobra.Command {
 					return err
 				}
 
-				token := res.Token
+				token := res.Msg.Token
 
 				go func() {
 					for {
@@ -90,16 +91,21 @@ func New() *cobra.Command {
 							fmt.Printf("error listing workers: %v\n", err)
 						} else {
 							fmt.Printf("workers: %+v\n", info)
-							ctx, err := api.WithHeaders(context.Background(), token)
-							if err != nil {
-								log.Printf("error setting headers: %v", err)
-							}
-							res, err := client.PingMachineHealth(ctx, &cloudv1.PingMachineHealthRequest{MachineId: machineID})
+
+							res, err := client.PingMachineHealth(
+								context.Background(),
+								api.WithHeaders(
+									connect.NewRequest(&cloudv1.PingMachineHealthRequest{
+										MachineId: machineID,
+									}),
+									token,
+								),
+							)
 							if err != nil {
 								fmt.Printf("error reporting health: %v\n", err)
 							} else {
 								fmt.Printf("reported health: %+v\n", res)
-								if res.ShouldTerminate {
+								if res.Msg.ShouldTerminate {
 									err := exec.Command("shutdown", "-h", "now").Run()
 									if err != nil {
 										fmt.Printf("error shutting down: %v\n", err)

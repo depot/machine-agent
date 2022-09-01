@@ -1,34 +1,32 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"runtime"
 
+	"github.com/bufbuild/connect-go"
 	"github.com/depot/machine-agent/internal/build"
-	cloudv1 "github.com/depot/machine-agent/pkg/proto/depot/cloud/v1"
-	"github.com/twitchtv/twirp"
+	"github.com/depot/machine-agent/pkg/proto/depot/cloud/v1/cloudv1connect"
 )
 
-func NewRPCFromEnv() cloudv1.MachineService {
+func NewRPCFromEnv() cloudv1connect.MachineServiceClient {
 	baseURL := os.Getenv("DEPOT_CLOUD_API_HOST")
 	if baseURL == "" {
-		baseURL = "https://cloud.depot.dev"
+		baseURL = "https://api.depot.dev"
 	}
-	return cloudv1.NewMachineServiceProtobufClient(baseURL, &http.Client{}, twirp.WithClientPathPrefix("/rpc"))
+	return cloudv1connect.NewMachineServiceClient(http.DefaultClient, baseURL, connect.WithGRPC())
 }
 
 func GetConnectionID() string {
 	return os.Getenv("DEPOT_CLOUD_CONNECTION_ID")
 }
 
-func WithHeaders(ctx context.Context, token string) (context.Context, error) {
-	header := make(http.Header)
-	header.Set("User-Agent", fmt.Sprintf("depot-cli/%s/%s/%s", build.Version, runtime.GOOS, runtime.GOARCH))
+func WithHeaders[T any](req *connect.Request[T], token string) *connect.Request[T] {
+	req.Header().Add("User-Agent", fmt.Sprintf("depot-cli/%s/%s/%s", build.Version, runtime.GOOS, runtime.GOARCH))
 	if token != "" {
-		header.Set("Authorization", "Bearer "+token)
+		req.Header().Add("Authorization", "Bearer "+token)
 	}
-	return twirp.WithHTTPRequestHeaders(ctx, header)
+	return req
 }
