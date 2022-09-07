@@ -3,7 +3,6 @@ package start
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"os/exec"
 	"time"
@@ -22,10 +21,6 @@ func New() *cobra.Command {
 		Use: "start",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client := api.NewRPCFromEnv()
-
-			http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprintf(w, "Hello world")
-			})
 
 			doc, signature, err := ec2.GetSignedIdentity()
 			if err != nil {
@@ -130,7 +125,7 @@ func New() *cobra.Command {
 				}
 			}
 
-			return http.ListenAndServe(":8080", nil)
+			return nil
 		},
 	}
 	return cmd
