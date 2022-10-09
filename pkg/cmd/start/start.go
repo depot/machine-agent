@@ -93,10 +93,10 @@ func New() *cobra.Command {
 				}
 
 				buildkitClient, err := buildkit.NewClient(context.Background(), "tcp://127.0.0.1:443", &buildkit.TlsOpts{
-					ServerName: machineID,
-					Cert:       "/etc/buildkit/tls.crt",
-					Key:        "/etc/buildkit/tls.key",
-					CACert:     "/etc/buildkit/tlsca.crt",
+					// ServerName: machineID,
+					Cert:   "/etc/buildkit/tls.crt",
+					Key:    "/etc/buildkit/tls.key",
+					CACert: "/etc/buildkit/tlsca.crt",
 				})
 				if err != nil {
 					return err
