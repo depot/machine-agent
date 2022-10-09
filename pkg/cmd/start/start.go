@@ -22,23 +22,45 @@ func New() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client := api.NewRPCFromEnv()
 
-			doc, signature, err := ec2.GetSignedIdentity()
-			if err != nil {
-				return err
+			cloudProvider := os.Getenv("DEPOT_CLOUD_PROVIDER")
+			if cloudProvider == "" {
+				cloudProvider = "aws"
+			}
+			if cloudProvider != "aws" && cloudProvider != "fly" {
+				return fmt.Errorf("unsupported cloud provider: %s", cloudProvider)
 			}
 
-			res, err := client.RegisterMachine(
-				context.Background(),
-				api.WithHeaders(
-					connect.NewRequest(&cloudv1.RegisterMachineRequest{
-						ConnectionId: api.GetConnectionID(),
-						Cloud:        cloudv1.RegisterMachineRequest_CLOUD_AWS,
-						Document:     doc,
-						Signature:    signature,
-					}),
-					"",
-				),
-			)
+			var doc string
+			var signature string
+			var err error
+
+			if cloudProvider == "aws" {
+				doc, signature, err = ec2.GetSignedIdentity()
+				if err != nil {
+					return err
+				}
+			}
+
+			// With Fly, we send the registration token from the environment.
+			if cloudProvider == "fly" {
+				doc = ""
+				signature = os.Getenv("DEPOT_CLOUD_REGISTRATION_TOKEN")
+				if signature == "" {
+					return fmt.Errorf("DEPOT_CLOUD_REGISTRATION_TOKEN must be set")
+				}
+			}
+
+			req := cloudv1.RegisterMachineRequest{
+				ConnectionId: api.GetConnectionID(),
+				Cloud:        cloudv1.RegisterMachineRequest_CLOUD_AWS,
+				Document:     doc,
+				Signature:    signature,
+			}
+			if cloudProvider == "fly" {
+				req.Cloud = cloudv1.RegisterMachineRequest_CLOUD_FLY
+			}
+
+			res, err := client.RegisterMachine(context.Background(), api.WithHeaders(connect.NewRequest(&req), ""))
 			if err != nil {
 				return err
 			}
@@ -46,12 +68,15 @@ func New() *cobra.Command {
 			fmt.Printf("Registered machine: %+v\n", res)
 			machineID := res.Msg.MachineId
 
-			for _, mount := range res.Msg.Mounts {
-				err := mounts.EnsureMounted(mount.Device, mount.Path)
-				if err != nil {
-					return err
+			if cloudProvider == "aws" {
+				for _, mount := range res.Msg.Mounts {
+					err := mounts.EnsureMounted(mount.Device, mount.Path)
+					if err != nil {
+						return err
+					}
 				}
 			}
+			// Fly machines have already mounted their volumes
 
 			if res.Msg.Kind == cloudv1.RegisterMachineResponse_KIND_BUILDKIT {
 				err = os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Msg.Cert.Cert), 0644)
@@ -68,7 +93,7 @@ func New() *cobra.Command {
 				}
 
 				buildkitClient, err := buildkit.NewClient(context.Background(), "tcp://127.0.0.1:443", &buildkit.TlsOpts{
-					ServerName: "localhost",
+					ServerName: machineID,
 					Cert:       "/etc/buildkit/tls.crt",
 					Key:        "/etc/buildkit/tls.key",
 					CACert:     "/etc/buildkit/tlsca.crt",
@@ -87,15 +112,8 @@ func New() *cobra.Command {
 						} else {
 							fmt.Printf("workers: %+v\n", info)
 
-							res, err := client.PingMachineHealth(
-								context.Background(),
-								api.WithHeaders(
-									connect.NewRequest(&cloudv1.PingMachineHealthRequest{
-										MachineId: machineID,
-									}),
-									token,
-								),
-							)
+							req := cloudv1.PingMachineHealthRequest{MachineId: machineID}
+							res, err := client.PingMachineHealth(context.Background(), api.WithHeaders(connect.NewRequest(&req), token))
 							if err != nil {
 								fmt.Printf("error reporting health: %v\n", err)
 							} else {
