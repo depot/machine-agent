@@ -18,6 +18,7 @@ message RegisterMachineRequest {
   enum Cloud {
     CLOUD_UNSPECIFIED = 0;
     CLOUD_AWS = 1;
+    CLOUD_FLY = 2;
   }
 }
 
