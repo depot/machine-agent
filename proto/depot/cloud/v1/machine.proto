@@ -29,6 +29,7 @@ message RegisterMachineResponse {
   Cert cert = 4;
   Cert ca_cert = 5;
   string token = 6;
+  optional string github_token = 7;
 
   message Cert {
     string cert = 1;
@@ -38,6 +39,8 @@ message RegisterMachineResponse {
   enum Kind {
     KIND_UNSPECIFIED = 0;
     KIND_BUILDKIT = 1;
+    KIND_GITHUB_ACTIONS = 2;
+    KIND_PENDING = 3;
   }
 
   message Mount {

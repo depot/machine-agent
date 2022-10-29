@@ -65,6 +65,18 @@ func New() *cobra.Command {
 				return err
 			}
 
+			for {
+				if res.Msg.Kind != cloudv1.RegisterMachineResponse_KIND_PENDING {
+					break
+				}
+				fmt.Println("Waiting for machine to be assigned...")
+				time.Sleep(1 * time.Second)
+				res, err = client.RegisterMachine(context.Background(), api.WithHeaders(connect.NewRequest(&req), ""))
+				if err != nil {
+					return err
+				}
+			}
+
 			fmt.Printf("Registered machine: %+v\n", res)
 			machineID := res.Msg.MachineId
 
