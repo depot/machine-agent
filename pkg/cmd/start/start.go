@@ -26,7 +26,7 @@ func New() *cobra.Command {
 			if cloudProvider == "" {
 				cloudProvider = "aws"
 			}
-			if cloudProvider != "aws" && cloudProvider != "fly" {
+			if cloudProvider != "aws" {
 				return fmt.Errorf("unsupported cloud provider: %s", cloudProvider)
 			}
 
@@ -41,23 +41,11 @@ func New() *cobra.Command {
 				}
 			}
 
-			// With Fly, we send the registration token from the environment.
-			if cloudProvider == "fly" {
-				doc = ""
-				signature = os.Getenv("DEPOT_CLOUD_REGISTRATION_TOKEN")
-				if signature == "" {
-					return fmt.Errorf("DEPOT_CLOUD_REGISTRATION_TOKEN must be set")
-				}
-			}
-
 			req := cloudv1.RegisterMachineRequest{
 				ConnectionId: api.GetConnectionID(),
 				Cloud:        cloudv1.RegisterMachineRequest_CLOUD_AWS,
 				Document:     doc,
 				Signature:    signature,
-			}
-			if cloudProvider == "fly" {
-				req.Cloud = cloudv1.RegisterMachineRequest_CLOUD_FLY
 			}
 
 			res, err := client.RegisterMachine(context.Background(), api.WithHeaders(connect.NewRequest(&req), ""))
@@ -88,7 +76,6 @@ func New() *cobra.Command {
 					}
 				}
 			}
-			// Fly machines have already mounted their volumes
 
 			if res.Msg.Kind == cloudv1.RegisterMachineResponse_KIND_BUILDKIT {
 				err = os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Msg.Cert.Cert), 0644)
