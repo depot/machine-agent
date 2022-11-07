@@ -53,11 +53,13 @@ func New() *cobra.Command {
 				return err
 			}
 
+			if res.Msg.Kind == cloudv1.RegisterMachineResponse_KIND_PENDING {
+				fmt.Println("Waiting for machine to be assigned...")
+			}
 			for {
 				if res.Msg.Kind != cloudv1.RegisterMachineResponse_KIND_PENDING {
 					break
 				}
-				fmt.Println("Waiting for machine to be assigned...")
 				time.Sleep(1 * time.Second)
 				res, err = client.RegisterMachine(context.Background(), api.WithHeaders(connect.NewRequest(&req), ""))
 				if err != nil {
@@ -105,18 +107,15 @@ func New() *cobra.Command {
 
 				go func() {
 					for {
-						info, err := buildkitClient.ListWorkers(context.Background())
+						_, err := buildkitClient.ListWorkers(context.Background())
 						if err != nil {
 							fmt.Printf("error listing workers: %v\n", err)
 						} else {
-							fmt.Printf("workers: %+v\n", info)
-
 							req := cloudv1.PingMachineHealthRequest{MachineId: machineID}
 							res, err := client.PingMachineHealth(context.Background(), api.WithHeaders(connect.NewRequest(&req), token))
 							if err != nil {
 								fmt.Printf("error reporting health: %v\n", err)
 							} else {
-								fmt.Printf("reported health: %+v\n", res)
 								if res.Msg.ShouldTerminate {
 									err := exec.Command("shutdown", "-h", "now").Run()
 									if err != nil {
