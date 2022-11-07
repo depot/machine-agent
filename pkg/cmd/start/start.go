@@ -26,7 +26,7 @@ func New() *cobra.Command {
 			if cloudProvider == "" {
 				cloudProvider = "aws"
 			}
-			if cloudProvider != "aws" && cloudProvider != "fly" {
+			if cloudProvider != "aws" {
 				return fmt.Errorf("unsupported cloud provider: %s", cloudProvider)
 			}
 
@@ -41,23 +41,11 @@ func New() *cobra.Command {
 				}
 			}
 
-			// With Fly, we send the registration token from the environment.
-			if cloudProvider == "fly" {
-				doc = ""
-				signature = os.Getenv("DEPOT_CLOUD_REGISTRATION_TOKEN")
-				if signature == "" {
-					return fmt.Errorf("DEPOT_CLOUD_REGISTRATION_TOKEN must be set")
-				}
-			}
-
 			req := cloudv1.RegisterMachineRequest{
 				ConnectionId: api.GetConnectionID(),
 				Cloud:        cloudv1.RegisterMachineRequest_CLOUD_AWS,
 				Document:     doc,
 				Signature:    signature,
-			}
-			if cloudProvider == "fly" {
-				req.Cloud = cloudv1.RegisterMachineRequest_CLOUD_FLY
 			}
 
 			res, err := client.RegisterMachine(context.Background(), api.WithHeaders(connect.NewRequest(&req), ""))
@@ -65,11 +53,13 @@ func New() *cobra.Command {
 				return err
 			}
 
+			if res.Msg.Kind == cloudv1.RegisterMachineResponse_KIND_PENDING {
+				fmt.Println("Waiting for machine to be assigned...")
+			}
 			for {
 				if res.Msg.Kind != cloudv1.RegisterMachineResponse_KIND_PENDING {
 					break
 				}
-				fmt.Println("Waiting for machine to be assigned...")
 				time.Sleep(1 * time.Second)
 				res, err = client.RegisterMachine(context.Background(), api.WithHeaders(connect.NewRequest(&req), ""))
 				if err != nil {
@@ -88,7 +78,6 @@ func New() *cobra.Command {
 					}
 				}
 			}
-			// Fly machines have already mounted their volumes
 
 			if res.Msg.Kind == cloudv1.RegisterMachineResponse_KIND_BUILDKIT {
 				err = os.WriteFile("/etc/buildkit/tls.crt", []byte(res.Msg.Cert.Cert), 0644)
@@ -118,18 +107,15 @@ func New() *cobra.Command {
 
 				go func() {
 					for {
-						info, err := buildkitClient.ListWorkers(context.Background())
+						_, err := buildkitClient.ListWorkers(context.Background())
 						if err != nil {
 							fmt.Printf("error listing workers: %v\n", err)
 						} else {
-							fmt.Printf("workers: %+v\n", info)
-
 							req := cloudv1.PingMachineHealthRequest{MachineId: machineID}
 							res, err := client.PingMachineHealth(context.Background(), api.WithHeaders(connect.NewRequest(&req), token))
 							if err != nil {
 								fmt.Printf("error reporting health: %v\n", err)
 							} else {
-								fmt.Printf("reported health: %+v\n", res)
 								if res.Msg.ShouldTerminate {
 									err := exec.Command("shutdown", "-h", "now").Run()
 									if err != nil {
