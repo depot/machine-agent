@@ -15,7 +15,7 @@ import (
 	"github.com/depot/machine-agent/pkg/proto/depot/cloud/v2/cloudv2connect"
 )
 
-func startBuildKit(client cloudv2connect.MachineServiceClient, task *cloudv2.RegisterMachineResponse_Buildkit, res *connect.Response[cloudv2.RegisterMachineResponse]) error {
+func startBuildKit(client cloudv2connect.MachineServiceClient, task *cloudv2.RegisterMachineResponse_Buildkit, res *cloudv2.RegisterMachineResponse) error {
 	for _, mount := range task.Buildkit.Mounts {
 		err := mounts.EnsureMounted(mount.Device, mount.Path)
 		if err != nil {
@@ -23,7 +23,8 @@ func startBuildKit(client cloudv2connect.MachineServiceClient, task *cloudv2.Reg
 		}
 	}
 
-	machineID := res.Msg.MachineId
+	machineID := res.MachineId
+	token := res.Token
 
 	err := os.WriteFile("/etc/buildkit/tls.crt", []byte(task.Buildkit.Cert.Cert), 0644)
 	if err != nil {
@@ -47,8 +48,6 @@ func startBuildKit(client cloudv2connect.MachineServiceClient, task *cloudv2.Reg
 	if err != nil {
 		return err
 	}
-
-	token := res.Msg.Token
 
 	go func() {
 		for {

@@ -3,8 +3,8 @@ package start
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
-	"time"
 
 	"github.com/bufbuild/connect-go"
 	"github.com/depot/machine-agent/pkg/api"
@@ -48,19 +48,16 @@ func New() *cobra.Command {
 				},
 			}
 
-			res, err := client.RegisterMachine(context.Background(), api.WithHeaders(connect.NewRequest(&req), ""))
+			stream, err := client.RegisterMachine(context.Background(), api.WithHeaders(connect.NewRequest(&req), ""))
 			if err != nil {
 				return err
 			}
 
-			for {
-				switch task := res.Msg.Task.(type) {
+			for stream.Receive() {
+				res := stream.Msg()
+				switch task := res.Task.(type) {
 				case *cloudv2.RegisterMachineResponse_Pending:
-					time.Sleep(1 * time.Second)
-					res, err = client.RegisterMachine(context.Background(), api.WithHeaders(connect.NewRequest(&req), ""))
-					if err != nil {
-						return err
-					}
+					log.Println("Waiting for task to be assigned...")
 
 				case *cloudv2.RegisterMachineResponse_Buildkit:
 					return startBuildKit(client, task, res)
@@ -72,6 +69,14 @@ func New() *cobra.Command {
 					return fmt.Errorf("unexpected task: %v", task)
 				}
 			}
+
+			err = stream.Err()
+			if err != nil {
+				fmt.Printf("error: %+v\n", err)
+				return err
+			}
+
+			return nil
 		},
 	}
 	return cmd

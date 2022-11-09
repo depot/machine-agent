@@ -13,10 +13,9 @@ import (
 	"github.com/depot/machine-agent/pkg/proto/depot/cloud/v2/cloudv2connect"
 )
 
-func startGitHubActions(client cloudv2connect.MachineServiceClient, task *cloudv2.RegisterMachineResponse_GithubActions, res *connect.Response[cloudv2.RegisterMachineResponse]) error {
-	machineID := res.Msg.MachineId
-
-	token := res.Msg.Token
+func startGitHubActions(client cloudv2connect.MachineServiceClient, task *cloudv2.RegisterMachineResponse_GithubActions, res *cloudv2.RegisterMachineResponse) error {
+	machineID := res.MachineId
+	token := res.Token
 
 	running := true
 	defer func() {

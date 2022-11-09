@@ -5,7 +5,7 @@ package depot.cloud.v2;
 import "google/protobuf/timestamp.proto";
 
 service MachineService {
-  rpc RegisterMachine(RegisterMachineRequest) returns (RegisterMachineResponse);
+  rpc RegisterMachine(RegisterMachineRequest) returns (stream RegisterMachineResponse);
   rpc PingMachineHealth(PingMachineHealthRequest) returns (PingMachineHealthResponse);
 }
 
