@@ -28,7 +28,7 @@ const (
 // MachineServiceClient is a client for the depot.cloud.v2.MachineService service.
 type MachineServiceClient interface {
 	RegisterMachine(context.Context, *connect_go.Request[v2.RegisterMachineRequest]) (*connect_go.ServerStreamForClient[v2.RegisterMachineResponse], error)
-	PingMachineHealth(context.Context, *connect_go.Request[v2.PingMachineHealthRequest]) (*connect_go.Response[v2.PingMachineHealthResponse], error)
+	PingMachineHealth(context.Context) *connect_go.ClientStreamForClient[v2.PingMachineHealthRequest, v2.PingMachineHealthResponse]
 }
 
 // NewMachineServiceClient constructs a client for the depot.cloud.v2.MachineService service. By
@@ -66,14 +66,14 @@ func (c *machineServiceClient) RegisterMachine(ctx context.Context, req *connect
 }
 
 // PingMachineHealth calls depot.cloud.v2.MachineService.PingMachineHealth.
-func (c *machineServiceClient) PingMachineHealth(ctx context.Context, req *connect_go.Request[v2.PingMachineHealthRequest]) (*connect_go.Response[v2.PingMachineHealthResponse], error) {
-	return c.pingMachineHealth.CallUnary(ctx, req)
+func (c *machineServiceClient) PingMachineHealth(ctx context.Context) *connect_go.ClientStreamForClient[v2.PingMachineHealthRequest, v2.PingMachineHealthResponse] {
+	return c.pingMachineHealth.CallClientStream(ctx)
 }
 
 // MachineServiceHandler is an implementation of the depot.cloud.v2.MachineService service.
 type MachineServiceHandler interface {
 	RegisterMachine(context.Context, *connect_go.Request[v2.RegisterMachineRequest], *connect_go.ServerStream[v2.RegisterMachineResponse]) error
-	PingMachineHealth(context.Context, *connect_go.Request[v2.PingMachineHealthRequest]) (*connect_go.Response[v2.PingMachineHealthResponse], error)
+	PingMachineHealth(context.Context, *connect_go.ClientStream[v2.PingMachineHealthRequest]) (*connect_go.Response[v2.PingMachineHealthResponse], error)
 }
 
 // NewMachineServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -88,7 +88,7 @@ func NewMachineServiceHandler(svc MachineServiceHandler, opts ...connect_go.Hand
 		svc.RegisterMachine,
 		opts...,
 	))
-	mux.Handle("/depot.cloud.v2.MachineService/PingMachineHealth", connect_go.NewUnaryHandler(
+	mux.Handle("/depot.cloud.v2.MachineService/PingMachineHealth", connect_go.NewClientStreamHandler(
 		"/depot.cloud.v2.MachineService/PingMachineHealth",
 		svc.PingMachineHealth,
 		opts...,
@@ -103,6 +103,6 @@ func (UnimplementedMachineServiceHandler) RegisterMachine(context.Context, *conn
 	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("depot.cloud.v2.MachineService.RegisterMachine is not implemented"))
 }
 
-func (UnimplementedMachineServiceHandler) PingMachineHealth(context.Context, *connect_go.Request[v2.PingMachineHealthRequest]) (*connect_go.Response[v2.PingMachineHealthResponse], error) {
+func (UnimplementedMachineServiceHandler) PingMachineHealth(context.Context, *connect_go.ClientStream[v2.PingMachineHealthRequest]) (*connect_go.Response[v2.PingMachineHealthResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("depot.cloud.v2.MachineService.PingMachineHealth is not implemented"))
 }

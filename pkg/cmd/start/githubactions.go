@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"time"
 
-	"github.com/bufbuild/connect-go"
-	"github.com/depot/machine-agent/pkg/api"
+	"github.com/depot/machine-agent/internal/build"
 	cloudv2 "github.com/depot/machine-agent/pkg/proto/depot/cloud/v2"
 	"github.com/depot/machine-agent/pkg/proto/depot/cloud/v2/cloudv2connect"
 )
@@ -22,23 +22,31 @@ func startGitHubActions(client cloudv2connect.MachineServiceClient, task *cloudv
 		running = false
 	}()
 	go func() {
+		req := &cloudv2.PingMachineHealthRequest{MachineId: machineID}
+		stream := client.PingMachineHealth(context.Background())
+		stream.RequestHeader().Add("User-Agent", fmt.Sprintf("depot-cli/%s/%s/%s", build.Version, runtime.GOOS, runtime.GOARCH))
+		stream.RequestHeader().Add("Authorization", "Bearer "+token)
+
 		for {
 			if !running {
-				return
-			}
+				res, err := stream.CloseAndReceive()
+				if err != nil {
+					fmt.Println("error closing stream:", err)
+				}
 
-			req := cloudv2.PingMachineHealthRequest{MachineId: machineID}
-			res, err := client.PingMachineHealth(context.Background(), api.WithHeaders(connect.NewRequest(&req), token))
-			if err != nil {
-				fmt.Printf("error reporting health: %v\n", err)
-			} else {
-				fmt.Printf("reported health: %+v\n", res)
 				if res.Msg.ShouldTerminate {
 					err := exec.Command("shutdown", "-h", "now").Run()
 					if err != nil {
 						fmt.Printf("error shutting down: %v\n", err)
 					}
 				}
+
+				return
+			}
+
+			err := stream.Send(req)
+			if err != nil {
+				fmt.Printf("error reporting health: %v\n", err)
 			}
 
 			<-time.After(time.Second)

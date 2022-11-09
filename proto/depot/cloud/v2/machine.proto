@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 service MachineService {
   rpc RegisterMachine(RegisterMachineRequest) returns (stream RegisterMachineResponse);
-  rpc PingMachineHealth(PingMachineHealthRequest) returns (PingMachineHealthResponse);
+  rpc PingMachineHealth(stream PingMachineHealthRequest) returns (PingMachineHealthResponse);
 }
 
 message RegisterMachineRequest {

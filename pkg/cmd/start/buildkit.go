@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"time"
 
-	"github.com/bufbuild/connect-go"
-	"github.com/depot/machine-agent/pkg/api"
+	"github.com/depot/machine-agent/internal/build"
 	"github.com/depot/machine-agent/pkg/buildkit"
 	"github.com/depot/machine-agent/pkg/mounts"
 	cloudv2 "github.com/depot/machine-agent/pkg/proto/depot/cloud/v2"
@@ -50,22 +50,19 @@ func startBuildKit(client cloudv2connect.MachineServiceClient, task *cloudv2.Reg
 	}
 
 	go func() {
+		req := &cloudv2.PingMachineHealthRequest{MachineId: machineID}
+		stream := client.PingMachineHealth(context.Background())
+		stream.RequestHeader().Add("User-Agent", fmt.Sprintf("depot-cli/%s/%s/%s", build.Version, runtime.GOOS, runtime.GOARCH))
+		stream.RequestHeader().Add("Authorization", "Bearer "+token)
+
 		for {
 			_, err := buildkitClient.ListWorkers(context.Background())
 			if err != nil {
 				fmt.Printf("error listing workers: %v\n", err)
 			} else {
-				req := cloudv2.PingMachineHealthRequest{MachineId: machineID}
-				res, err := client.PingMachineHealth(context.Background(), api.WithHeaders(connect.NewRequest(&req), token))
+				err := stream.Send(req)
 				if err != nil {
 					fmt.Printf("error reporting health: %v\n", err)
-				} else {
-					if res.Msg.ShouldTerminate {
-						err := exec.Command("shutdown", "-h", "now").Run()
-						if err != nil {
-							fmt.Printf("error shutting down: %v\n", err)
-						}
-					}
 				}
 			}
 
