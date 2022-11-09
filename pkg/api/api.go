@@ -8,15 +8,15 @@ import (
 
 	"github.com/bufbuild/connect-go"
 	"github.com/depot/machine-agent/internal/build"
-	"github.com/depot/machine-agent/pkg/proto/depot/cloud/v1/cloudv1connect"
+	"github.com/depot/machine-agent/pkg/proto/depot/cloud/v2/cloudv2connect"
 )
 
-func NewRPCFromEnv() cloudv1connect.MachineServiceClient {
+func NewRPCFromEnv() cloudv2connect.MachineServiceClient {
 	baseURL := os.Getenv("DEPOT_CLOUD_API_HOST")
 	if baseURL == "" {
 		baseURL = "https://api.depot.dev"
 	}
-	return cloudv1connect.NewMachineServiceClient(http.DefaultClient, baseURL, connect.WithGRPC())
+	return cloudv2connect.NewMachineServiceClient(http.DefaultClient, baseURL, connect.WithGRPC())
 }
 
 func GetConnectionID() string {
