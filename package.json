@@ -4,6 +4,7 @@
     "build": "./support/build.sh",
     "build:binaries": "pkg dist/index.js --no-bytecode --public --target node18-linux-x64,node18-linux-arm64 --output dist/machine-agent",
     "build:ts": "esbuild --bundle --outfile=dist/index.js --platform=node --target=node18 src/index.ts",
+    "clean": "rm -rf dist",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check ."
   },
