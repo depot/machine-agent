@@ -12,6 +12,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
   }
 
   const {machineId, token} = message
+  const metadata = Metadata({Authorization: `Bearer ${token}`})
 
   await fsp.writeFile('/etc/buildkit/tls.crt', task.cert!.cert, {mode: 0o644})
   await fsp.writeFile('/etc/buildkit/tls.key', task.cert!.key, {mode: 0o644})
@@ -26,13 +27,19 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
     }
   }
 
-  const buildkit = execa('/usr/bin/buildkitd', [], {stdio: 'inherit'}).finally(() => {
-    done = true
-  })
+  async function runBuildKit() {
+    try {
+      await execa('/usr/bin/buildkitd', [], {stdio: 'inherit'})
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
+        // Ignore this error, it's expected when the process is killed.
+      } else {
+        throw error
+      }
+    } finally {
+      done = true
+    }
+  }
 
-  const healthLoop = client.pingMachineHealth(pingHealth(), {
-    metadata: Metadata({Authorization: `Bearer ${token}`}),
-  })
-
-  await Promise.all([buildkit, healthLoop])
+  await Promise.all([runBuildKit(), client.pingMachineHealth(pingHealth(), {metadata})])
 }
