@@ -4,12 +4,10 @@ import {sleep} from './common'
 
 export async function ensureMounted(device: string, path: string) {
   await waitForDevice(device)
-  const realDevice = await fsp.readlink(device)
-
-  const regex = new RegExp(`^${realDevice} ${path} `)
+  const realDevice = await fsp.realpath(device)
 
   const mounts = await fsp.readFile('/proc/mounts', 'utf8')
-  if (regex.test(mounts)) {
+  if (mounts.includes(`${realDevice} ${path} `)) {
     console.log(`Device ${device} is already mounted at ${path}`)
     return
   }

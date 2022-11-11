@@ -9,15 +9,15 @@ pnpm build:binaries
 
 cd dist
 
-mkdir -p machine-agent_linux_x64/bin
+mkdir -p machine-agent_linux_amd64/bin
 mkdir -p machine-agent_linux_arm64/bin
 
-cp machine-agent-x64 machine-agent_linux_x64/bin/machine-agent
+cp machine-agent-x64 machine-agent_linux_amd64/bin/machine-agent
 cp machine-agent-arm64 machine-agent_linux_arm64/bin/machine-agent
 
 mkdir -p artifacts
-cd machine-agent_linux_x64
-tar -czf ../artifacts/machine-agent_linux_x64.tar.gz *
+cd machine-agent_linux_amd64
+tar -czf ../artifacts/machine-agent_linux_amd64.tar.gz *
 cd ..
 cd machine-agent_linux_arm64
 tar -czf ../artifacts/machine-agent_linux_arm64.tar.gz *

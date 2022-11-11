@@ -13,8 +13,8 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
 
   const {machineId, token} = message
 
-  await fsp.writeFile('/etc/buildkit/tls.crt', task.cert!.key, {mode: 0o644})
-  await fsp.writeFile('/etc/buildkit/tls.key', task.cert!.cert, {mode: 0o644})
+  await fsp.writeFile('/etc/buildkit/tls.crt', task.cert!.cert, {mode: 0o644})
+  await fsp.writeFile('/etc/buildkit/tls.key', task.cert!.key, {mode: 0o644})
   await fsp.writeFile('/etc/buildkit/tlsca.crt', task.caCert!.cert, {mode: 0o644})
 
   let done = false
@@ -26,14 +26,13 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
     }
   }
 
-  const healthResponse = client.pingMachineHealth(pingHealth(), {
+  const buildkit = execa('/usr/bin/buildkitd', [], {stdio: 'inherit'}).finally(() => {
+    done = true
+  })
+
+  const healthLoop = client.pingMachineHealth(pingHealth(), {
     metadata: Metadata({Authorization: `Bearer ${token}`}),
   })
 
-  try {
-    await execa('/usr/bin/buildkitd', [], {stdio: 'inherit'})
-  } finally {
-    done = true
-    await healthResponse
-  }
+  await Promise.all([buildkit, healthLoop])
 }

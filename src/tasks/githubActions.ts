@@ -11,19 +11,6 @@ export async function startGitHubActions(
   const {machineId, token} = message
   const runnerDir = `/home/runner/runners/${task.runnerVersion}`
 
-  let done = false
-  async function* pingHealth() {
-    while (true) {
-      if (done) return
-      await sleep(1000)
-      yield {machineId}
-    }
-  }
-
-  const healthResponse = client.pingMachineHealth(pingHealth(), {
-    metadata: Metadata({Authorization: `Bearer ${token}`}),
-  })
-
   await execa(
     './config.sh',
     [
@@ -47,10 +34,22 @@ export async function startGitHubActions(
     },
   )
 
-  try {
-    await execa('./run', [], {cwd: runnerDir, stdio: 'inherit'})
-  } finally {
-    done = true
-    await healthResponse
+  let done = false
+  async function* pingHealth() {
+    while (true) {
+      if (done) return
+      await sleep(1000)
+      yield {machineId}
+    }
   }
+
+  const runner = execa('./run', [], {cwd: runnerDir, stdio: 'inherit'}).finally(() => {
+    done = true
+  })
+
+  const healthLoop = client.pingMachineHealth(pingHealth(), {
+    metadata: Metadata({Authorization: `Bearer ${token}`}),
+  })
+
+  await Promise.all([runner, healthLoop])
 }

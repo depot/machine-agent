@@ -9,6 +9,7 @@
     "fmt:check": "prettier --check ."
   },
   "dependencies": {
+    "@sentry/node": "^7.19.0",
     "dotenv": "^16.0.3",
     "execa": "^6.1.0",
     "long": "4.x.x",

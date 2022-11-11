@@ -1,11 +1,33 @@
+import * as Sentry from '@sentry/node'
 import {startBuildKit} from './tasks/buildkit'
 import {startGitHubActions} from './tasks/githubActions'
 import {assertNever, promises, sleep} from './utils/common'
-import {DEPOT_CLOUD_CONNECTION_ID} from './utils/env'
+import {DEPOT_CLOUD_CONNECTION_ID, DEPOT_MACHINE_AGENT_VERSION} from './utils/env'
 import {client} from './utils/grpc'
 import {getBase64Signature, getInstanceIdentityDocument} from './utils/imds'
 
+Sentry.init({
+  dsn: 'https://1b42edcd994c4c9398034d91ced602f0@o1152282.ingest.sentry.io/4504141762920448',
+})
+
 async function main() {
+  if (process.argv.includes('--version')) {
+    console.log(DEPOT_MACHINE_AGENT_VERSION)
+    return
+  }
+
+  while (true) {
+    try {
+      await runLoop()
+    } catch (err) {
+      Sentry.captureException(err)
+      console.log(err)
+      await sleep(1000)
+    }
+  }
+}
+
+async function runLoop() {
   const aws = await promises({document: getInstanceIdentityDocument(), signature: getBase64Signature()})
   const stream = client.registerMachine({connectionId: DEPOT_CLOUD_CONNECTION_ID, cloud: {$case: 'aws', aws}})
 
@@ -32,6 +54,7 @@ async function main() {
 }
 
 main().catch((err) => {
+  Sentry.captureException(err)
   console.log(err)
   process.exit(1)
 })
