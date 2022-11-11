@@ -4,7 +4,7 @@ import {sleep} from './common'
 
 export async function ensureMounted(device: string, path: string) {
   await waitForDevice(device)
-  const realDevice = await fsp.readlink(path)
+  const realDevice = await fsp.readlink(device)
 
   const regex = new RegExp(`^${realDevice} ${path} `)
 
