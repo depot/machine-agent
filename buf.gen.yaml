@@ -8,9 +8,13 @@ managed:
       - buf.build/googleapis/googleapis
 
 plugins:
-  - remote: buf.build/protocolbuffers/plugins/go
-    out: pkg/proto
-    opt: paths=source_relative
-  - remote: buf.build/bufbuild/plugins/connect-go:v0.4.0-1
-    out: pkg/proto
-    opt: paths=source_relative
+  - name: ts
+    out: src/gen
+    strategy: all
+    path: node_modules/ts-proto/protoc-gen-ts_proto
+    opt:
+      - esModuleInterop=true
+      - oneof=unions
+      - outputServices=nice-grpc
+      - outputServices=generic-definitions
+      - useExactTypes=false

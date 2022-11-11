@@ -3,3 +3,5 @@ dist/
 /bin
 
 /CHANGELOG.md
+
+node_modules/
