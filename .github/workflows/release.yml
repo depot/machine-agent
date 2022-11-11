@@ -21,6 +21,7 @@ jobs:
       - uses: depot/build-push-action@v1
         with:
           outputs: type=local,dest=dist/artifacts
+          build-args: VERSION=${{ steps.tag-name.outputs.tag-name }}
       - uses: softprops/action-gh-release@v1
         with:
           files: dist/artifacts/*

@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 
+VERSION="${VERSION:-dev}"
+
 rm -rf dist/artifacts
-pnpm build:ts
+pnpm build:ts --define:process.env.DEPOT_MACHINE_AGENT_VERSION=\"${VERSION}\"
 pnpm build:binaries
 
 cd dist

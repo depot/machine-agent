@@ -6,6 +6,8 @@ COPY package.json pnpm-lock.yaml ./
 RUN corepack enable
 RUN pnpm install --frozen-lockfile
 COPY . .
+ARG VERSION=dev
+ENV VERSION=${VERSION}
 RUN --mount=type=cache,target=/tmp/pkg-cache pnpm build
 
 FROM scratch
