@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node'
+import {ClientError, Status} from 'nice-grpc-common'
 import {startBuildKit} from './tasks/buildkit'
 import {startGitHubActions} from './tasks/githubActions'
 import {assertNever, promises, sleep} from './utils/common'
@@ -28,27 +29,35 @@ async function main() {
 }
 
 async function runLoop() {
-  const aws = await promises({document: getInstanceIdentityDocument(), signature: getBase64Signature()})
-  const stream = client.registerMachine({connectionId: DEPOT_CLOUD_CONNECTION_ID, cloud: {$case: 'aws', aws}})
+  try {
+    const aws = await promises({document: getInstanceIdentityDocument(), signature: getBase64Signature()})
+    const stream = client.registerMachine({connectionId: DEPOT_CLOUD_CONNECTION_ID, cloud: {$case: 'aws', aws}})
 
-  for await (const message of stream) {
-    if (!message.task) continue
+    for await (const message of stream) {
+      if (!message.task) continue
 
-    switch (message.task?.$case) {
-      case 'pending':
-        await sleep(1000)
-        break
+      switch (message.task?.$case) {
+        case 'pending':
+          await sleep(1000)
+          break
 
-      case 'buildkit':
-        await startBuildKit(message, message.task.buildkit)
-        break
+        case 'buildkit':
+          await startBuildKit(message, message.task.buildkit)
+          break
 
-      case 'githubActions':
-        await startGitHubActions(message, message.task.githubActions)
-        break
+        case 'githubActions':
+          await startGitHubActions(message, message.task.githubActions)
+          break
 
-      default:
-        assertNever(message.task)
+        default:
+          assertNever(message.task)
+      }
+    }
+  } catch (err) {
+    if (err instanceof ClientError && err.code === Status.INTERNAL && err.details.includes('RST_STREAM')) {
+      console.log('Connection closed by server')
+    } else {
+      throw err
     }
   }
 }
