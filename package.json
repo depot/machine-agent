@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "build": "./support/build.sh",
-    "build:binaries": "pkg dist/index.js --target node18-linux-x64,node18-linux-arm64,node18-macos-x64,node18-macos-arm64 --output dist/machine-agent",
+    "build:binaries": "pkg dist/index.js --no-bytecode --public --target node18-linux-x64,node18-linux-arm64 --output dist/machine-agent",
     "build:ts": "esbuild --bundle --outfile=dist/index.js --platform=node --target=node18 src/index.ts",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check ."
