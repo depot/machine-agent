@@ -13,7 +13,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup-go
       - name: Compute tag name
         id: tag-name
         run: echo "::set-output name=tag-name::${GITHUB_REF#refs/tags/}"
