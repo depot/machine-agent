@@ -1,8 +1,7 @@
 import {execa} from 'execa'
 import {Metadata} from 'nice-grpc'
 import {RegisterMachineResponse, RegisterMachineResponse_GitHubActionsTask} from '../gen/depot/cloud/v2/machine'
-import {sleep} from '../utils/common'
-import {client} from '../utils/grpc'
+import {reportHealth} from '../utils/health'
 
 export async function startGitHubActions(
   message: RegisterMachineResponse,
@@ -38,20 +37,12 @@ export async function startGitHubActions(
   const controller = new AbortController()
   const signal = controller.signal
 
-  async function* pingHealth() {
-    while (true) {
-      if (signal.aborted) return
-      await sleep(1000)
-      yield {machineId}
-    }
-  }
-
   try {
     await Promise.all([
       execa('./run.sh', [], {cwd: runnerDir, stdio: 'inherit', signal}).finally(() => {
         controller.abort()
       }),
-      client.pingMachineHealth(pingHealth(), {metadata}),
+      reportHealth({machineId, signal, metadata}),
     ])
   } catch (error) {
     throw error

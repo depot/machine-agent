@@ -2,8 +2,7 @@ import {execa} from 'execa'
 import * as fsp from 'fs/promises'
 import {Metadata} from 'nice-grpc'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/depot/cloud/v2/machine'
-import {sleep} from '../utils/common'
-import {client} from '../utils/grpc'
+import {reportHealth} from '../utils/health'
 import {ensureMounted} from '../utils/mounts'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
@@ -21,14 +20,6 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
   const controller = new AbortController()
   const signal = controller.signal
 
-  async function* pingHealth() {
-    while (true) {
-      if (signal.aborted) return
-      await sleep(1000)
-      yield {machineId}
-    }
-  }
-
   async function runBuildKit() {
     try {
       await execa('/usr/bin/buildkitd', [], {stdio: 'inherit', signal})
@@ -44,7 +35,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
   }
 
   try {
-    await Promise.all([runBuildKit(), client.pingMachineHealth(pingHealth(), {metadata})])
+    await Promise.all([runBuildKit(), reportHealth({machineId, signal, metadata})])
   } catch (error) {
     throw error
   } finally {
