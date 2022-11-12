@@ -12,7 +12,7 @@ export async function ensureMounted(device: string, path: string) {
     return
   }
 
-  const res = await execa('blkid', [realDevice])
+  const res = await execa('blkid', [realDevice], {reject: false})
   if (res.stdout === '') {
     console.log(`Device ${device} is not formatted`)
     await execa('mkfs', ['-t', 'ext4', '-T', 'news', realDevice], {stdio: 'inherit'})
