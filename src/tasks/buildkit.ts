@@ -18,10 +18,12 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
   await fsp.writeFile('/etc/buildkit/tls.key', task.cert!.key, {mode: 0o644})
   await fsp.writeFile('/etc/buildkit/tlsca.crt', task.caCert!.cert, {mode: 0o644})
 
-  let done = false
+  const controller = new AbortController()
+  const signal = controller.signal
+
   async function* pingHealth() {
     while (true) {
-      if (done) return
+      if (signal.aborted) return
       await sleep(1000)
       yield {machineId}
     }
@@ -29,7 +31,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
 
   async function runBuildKit() {
     try {
-      await execa('/usr/bin/buildkitd', [], {stdio: 'inherit'})
+      await execa('/usr/bin/buildkitd', [], {stdio: 'inherit', signal})
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
         // Ignore this error, it's expected when the process is killed.
@@ -37,9 +39,15 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
         throw error
       }
     } finally {
-      done = true
+      controller.abort()
     }
   }
 
-  await Promise.all([runBuildKit(), client.pingMachineHealth(pingHealth(), {metadata})])
+  try {
+    await Promise.all([runBuildKit(), client.pingMachineHealth(pingHealth(), {metadata})])
+  } catch (error) {
+    throw error
+  } finally {
+    controller.abort()
+  }
 }
