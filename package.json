@@ -1,0 +1,35 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "./support/build.sh",
+    "build:binaries": "pkg dist/index.js --no-bytecode --public --target node18-linux-x64,node18-linux-arm64 --output dist/machine-agent",
+    "build:ts": "esbuild --bundle --outfile=dist/index.js --platform=node --target=node18 src/index.ts",
+    "clean": "rm -rf dist",
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@sentry/node": "^7.19.0",
+    "dotenv": "^16.0.3",
+    "execa": "^6.1.0",
+    "long": "4.x.x",
+    "nice-grpc": "^2.0.1",
+    "nice-grpc-common": "^2.0.0",
+    "nice-grpc-server-reflection": "^2.0.1",
+    "protobufjs": "^7.1.2",
+    "ts-proto": "^1.131.0",
+    "undici": "^5.12.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^1.0.1",
+    "@types/long": "4.x.x",
+    "@types/node": "^18.11.9",
+    "esbuild": "^0.15.13",
+    "esbuild-register": "^3.3.3",
+    "pkg": "^5.8.0",
+    "prettier": "^2.7.1",
+    "prettier-plugin-organize-imports": "^3.1.1",
+    "prettier-plugin-pkg": "^0.17.1",
+    "typescript": "^4.8.4"
+  }
+}

@@ -3,45 +3,27 @@ on: push
 
 jobs:
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup-go
-      - name: Verify dependencies
-        run: |
-          go mod verify
-          go mod download
-      - name: Check formatting
-        run: |
-          STATUS=0
-          assert-nothing-changed() {
-            local diff
-            "$@" >/dev/null || return 1
-            if ! diff="$(git diff -U1 --color --exit-code)"; then
-              printf '\e[31mError: running `\e[1m%s\e[22m` results in modifications that you must check into version control:\e[0m\n%s\n\n' "$*" "$diff" >&2
-              git checkout -- .
-              STATUS=1
-            fi
-          }
-          assert-nothing-changed go fmt ./...
-          assert-nothing-changed go mod tidy
-          exit $STATUS
-
-      - uses: golangci/golangci-lint-action@v3
+      - uses: pnpm/action-setup@v2.2.4
         with:
-          version: v1.46.2
-          only-new-issues: false
-          skip-cache: false
-          skip-build-cache: true
-          skip-pkg-cache: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version: 7.x.x
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm fmt:check
 
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup-go
-      - uses: goreleaser/goreleaser-action@v3
+      - uses: depot/setup-action@v1
+      - uses: depot/build-push-action@v1
         with:
-          version: 1.9.2
-          args: build --rm-dist --snapshot
+          outputs: type=local,dest=dist/artifacts
