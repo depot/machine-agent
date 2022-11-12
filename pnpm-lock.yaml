@@ -7,7 +7,7 @@ specifiers:
   '@types/node': ^18.11.9
   dotenv: ^16.0.3
   esbuild: ^0.15.13
-  esbuild-register: ^3.3.3
+  esbuild-register: ^3.4.1
   execa: ^6.1.0
   long: 4.x.x
   nice-grpc: ^2.0.1
@@ -15,7 +15,7 @@ specifiers:
   nice-grpc-server-reflection: ^2.0.1
   pkg: ^5.8.0
   prettier: ^2.7.1
-  prettier-plugin-organize-imports: ^3.1.1
+  prettier-plugin-organize-imports: ^3.2.0
   prettier-plugin-pkg: ^0.17.1
   protobufjs: ^7.1.2
   ts-proto: ^1.131.0
@@ -39,10 +39,10 @@ devDependencies:
   '@types/long': 4.0.2
   '@types/node': 18.11.9
   esbuild: 0.15.13
-  esbuild-register: 3.3.3_esbuild@0.15.13
+  esbuild-register: 3.4.1_esbuild@0.15.13
   pkg: 5.8.0
   prettier: 2.7.1
-  prettier-plugin-organize-imports: 3.1.1_dmjzcauo3cshxeipj7bv64ktgm
+  prettier-plugin-organize-imports: 3.2.0_dmjzcauo3cshxeipj7bv64ktgm
   prettier-plugin-pkg: 0.17.1_prettier@2.7.1
   typescript: 4.8.4
 
@@ -608,12 +608,15 @@ packages:
     dev: true
     optional: true
 
-  /esbuild-register/3.3.3_esbuild@0.15.13:
-    resolution: {integrity: sha512-eFHOkutgIMJY5gc8LUp/7c+LLlDqzNi9T6AwCZ2WKKl3HmT+5ef3ZRyPPxDOynInML0fgaC50yszPKfPnjC0NQ==}
+  /esbuild-register/3.4.1_esbuild@0.15.13:
+    resolution: {integrity: sha512-iCgs88/1wA5dIRx4i65eSjbkgrQQQJGpY6Z1eD2XPlzrSjbgNtfkw2/rfSMzJ4dTtlOD8EZTxrIA3fyYp0FsMA==}
     peerDependencies:
       esbuild: '>=0.12 <1'
     dependencies:
+      debug: 4.3.4
       esbuild: 0.15.13
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /esbuild-sunos-64/0.15.13:
@@ -1175,13 +1178,16 @@ packages:
       tunnel-agent: 0.6.0
     dev: true
 
-  /prettier-plugin-organize-imports/3.1.1_dmjzcauo3cshxeipj7bv64ktgm:
-    resolution: {integrity: sha512-6bHIQzybqA644h0WGUW3gpWEVbMBvzui5wCMRBi7qA++d5ov2xjjfDk8pxJJ/ardfZrGAwizKMq/fQMFdJ+0Zw==}
+  /prettier-plugin-organize-imports/3.2.0_dmjzcauo3cshxeipj7bv64ktgm:
+    resolution: {integrity: sha512-jeZ13YVKgXYCzkuwnoR6saKxJmdRYWMxS2G/su1V3qDWqTo1Q5iSoTblBxsXXAmomXfPqa/uA7YCK0/S86KLOQ==}
     peerDependencies:
-      '@volar/vue-typescript': '>=0.40.2'
+      '@volar/vue-language-plugin-pug': ^1.0.4
+      '@volar/vue-typescript': ^1.0.4
       prettier: '>=2.0'
       typescript: '>=2.9'
     peerDependenciesMeta:
+      '@volar/vue-language-plugin-pug':
+        optional: true
       '@volar/vue-typescript':
         optional: true
     dependencies:
@@ -1569,7 +1575,7 @@ packages:
   /wide-align/1.1.5:
     resolution: {integrity: sha512-eDMORYaPNZ4sQIuuYPDHdQvf4gyCF9rEEV/yPxGfwPkRodwEgiMUUXTx/dex+Me0wxx53S+NgUHaP7y3MGlDmg==}
     dependencies:
-      string-width: 4.2.3
+      string-width: 1.0.2
     dev: true
 
   /wrap-ansi/7.0.0:
