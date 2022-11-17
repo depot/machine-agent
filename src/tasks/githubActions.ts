@@ -3,6 +3,8 @@ import {Metadata} from 'nice-grpc'
 import {RegisterMachineResponse, RegisterMachineResponse_GitHubActionsTask} from '../gen/depot/cloud/v2/machine'
 import {reportHealth} from '../utils/health'
 
+const RUNNER_UID = 1001
+
 export async function startGitHubActions(
   message: RegisterMachineResponse,
   task: RegisterMachineResponse_GitHubActionsTask,
@@ -31,6 +33,7 @@ export async function startGitHubActions(
     {
       cwd: runnerDir,
       stdio: 'inherit',
+      uid: RUNNER_UID,
     },
   )
 
@@ -39,7 +42,7 @@ export async function startGitHubActions(
 
   try {
     await Promise.all([
-      execa('./run.sh', [], {cwd: runnerDir, stdio: 'inherit', signal}).finally(() => {
+      execa('./run.sh', [], {cwd: runnerDir, stdio: 'inherit', signal, uid: RUNNER_UID}).finally(() => {
         controller.abort()
       }),
       reportHealth({machineId, signal, metadata}),
