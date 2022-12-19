@@ -40,6 +40,7 @@ export interface RegisterMachineResponse_BuildKitTask {
   cert: Cert | undefined
   caCert: Cert | undefined
   mounts: RegisterMachineResponse_Mount[]
+  cacheSize: number
 }
 
 /** GithubActionsTask represents an instruction to start a GitHub Actions runner */
@@ -412,7 +413,7 @@ export const RegisterMachineResponse_PendingTask = {
 }
 
 function createBaseRegisterMachineResponse_BuildKitTask(): RegisterMachineResponse_BuildKitTask {
-  return {serverName: '', cert: undefined, caCert: undefined, mounts: []}
+  return {serverName: '', cert: undefined, caCert: undefined, mounts: [], cacheSize: 0}
 }
 
 export const RegisterMachineResponse_BuildKitTask = {
@@ -428,6 +429,9 @@ export const RegisterMachineResponse_BuildKitTask = {
     }
     for (const v of message.mounts) {
       RegisterMachineResponse_Mount.encode(v!, writer.uint32(34).fork()).ldelim()
+    }
+    if (message.cacheSize !== 0) {
+      writer.uint32(40).int32(message.cacheSize)
     }
     return writer
   },
@@ -451,6 +455,9 @@ export const RegisterMachineResponse_BuildKitTask = {
         case 4:
           message.mounts.push(RegisterMachineResponse_Mount.decode(reader, reader.uint32()))
           break
+        case 5:
+          message.cacheSize = reader.int32()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -467,6 +474,7 @@ export const RegisterMachineResponse_BuildKitTask = {
       mounts: Array.isArray(object?.mounts)
         ? object.mounts.map((e: any) => RegisterMachineResponse_Mount.fromJSON(e))
         : [],
+      cacheSize: isSet(object.cacheSize) ? Number(object.cacheSize) : 0,
     }
   },
 
@@ -480,6 +488,7 @@ export const RegisterMachineResponse_BuildKitTask = {
     } else {
       obj.mounts = []
     }
+    message.cacheSize !== undefined && (obj.cacheSize = Math.round(message.cacheSize))
     return obj
   },
 
@@ -489,6 +498,7 @@ export const RegisterMachineResponse_BuildKitTask = {
     message.cert = object.cert !== undefined && object.cert !== null ? Cert.fromPartial(object.cert) : undefined
     message.caCert = object.caCert !== undefined && object.caCert !== null ? Cert.fromPartial(object.caCert) : undefined
     message.mounts = object.mounts?.map((e) => RegisterMachineResponse_Mount.fromPartial(e)) || []
+    message.cacheSize = object.cacheSize ?? 0
     return message
   },
 }

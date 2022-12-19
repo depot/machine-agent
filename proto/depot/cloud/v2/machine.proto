@@ -44,6 +44,7 @@ message RegisterMachineResponse {
     Cert cert = 2;
     Cert ca_cert = 3;
     repeated Mount mounts = 4;
+    int32 cache_size = 5;
   }
 
   // GithubActionsTask represents an instruction to start a GitHub Actions runner
