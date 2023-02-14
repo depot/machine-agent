@@ -41,6 +41,7 @@ export interface RegisterMachineResponse_BuildKitTask {
   caCert: Cert | undefined
   mounts: RegisterMachineResponse_Mount[]
   cacheSize: number
+  traceEndpoint?: string | undefined
 }
 
 /** GithubActionsTask represents an instruction to start a GitHub Actions runner */
@@ -413,7 +414,7 @@ export const RegisterMachineResponse_PendingTask = {
 }
 
 function createBaseRegisterMachineResponse_BuildKitTask(): RegisterMachineResponse_BuildKitTask {
-  return {serverName: '', cert: undefined, caCert: undefined, mounts: [], cacheSize: 0}
+  return {serverName: '', cert: undefined, caCert: undefined, mounts: [], cacheSize: 0, traceEndpoint: undefined}
 }
 
 export const RegisterMachineResponse_BuildKitTask = {
@@ -432,6 +433,9 @@ export const RegisterMachineResponse_BuildKitTask = {
     }
     if (message.cacheSize !== 0) {
       writer.uint32(40).int32(message.cacheSize)
+    }
+    if (message.traceEndpoint !== undefined) {
+      writer.uint32(50).string(message.traceEndpoint)
     }
     return writer
   },
@@ -458,6 +462,9 @@ export const RegisterMachineResponse_BuildKitTask = {
         case 5:
           message.cacheSize = reader.int32()
           break
+        case 6:
+          message.traceEndpoint = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -475,6 +482,7 @@ export const RegisterMachineResponse_BuildKitTask = {
         ? object.mounts.map((e: any) => RegisterMachineResponse_Mount.fromJSON(e))
         : [],
       cacheSize: isSet(object.cacheSize) ? Number(object.cacheSize) : 0,
+      traceEndpoint: isSet(object.traceEndpoint) ? String(object.traceEndpoint) : undefined,
     }
   },
 
@@ -489,6 +497,7 @@ export const RegisterMachineResponse_BuildKitTask = {
       obj.mounts = []
     }
     message.cacheSize !== undefined && (obj.cacheSize = Math.round(message.cacheSize))
+    message.traceEndpoint !== undefined && (obj.traceEndpoint = message.traceEndpoint)
     return obj
   },
 
@@ -499,6 +508,7 @@ export const RegisterMachineResponse_BuildKitTask = {
     message.caCert = object.caCert !== undefined && object.caCert !== null ? Cert.fromPartial(object.caCert) : undefined
     message.mounts = object.mounts?.map((e) => RegisterMachineResponse_Mount.fromPartial(e)) || []
     message.cacheSize = object.cacheSize ?? 0
+    message.traceEndpoint = object.traceEndpoint ?? undefined
     return message
   },
 }
