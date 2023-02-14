@@ -69,10 +69,9 @@ keepBytes = ${cacheSizeBytes}
           OTEL_TRACES_EXPORTER: 'otlp',
           OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: 'grpc',
           OTEL_EXPORTER_OTLP_COMPRESSION: 'gzip',
-          // Does it makes sense to use buildID?
-          OTEL_RESOURCE_ATTRIBUTES: `depot.instance.id=${machineId}`,
-          // TODO: url query encode
-          OTEL_EXPORTER_OTLP_HEADERS: `Authorization=Bearer%20${token}`,
+          // TODO: Does it makes sense to use buildID?
+          OTEL_RESOURCE_ATTRIBUTES: `depot.instance.id=${encodeURIComponent(machineId)}`,
+          OTEL_EXPORTER_OTLP_HEADERS: `Authorization=${encodeURIComponent(`Bearer ${token}`)}`,
           // TODO: remove this once we have a proper collector
           OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: 'http://localhost:6673',
           OTEL_EXPORTER_OTLP_INSECURE: 'true',
