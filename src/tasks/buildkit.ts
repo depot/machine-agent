@@ -62,7 +62,22 @@ keepBytes = ${cacheSizeBytes}
 
   async function runBuildKit() {
     try {
-      await execa('/usr/bin/buildkitd', [], {stdio: 'inherit', signal})
+      await execa('/usr/bin/buildkitd', [], {
+        stdio: 'inherit',
+        signal,
+        env: {
+          OTEL_TRACES_EXPORTER: 'otlp',
+          OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: 'grpc',
+          OTEL_EXPORTER_OTLP_COMPRESSION: 'gzip',
+          // Does it makes sense to use buildID?
+          OTEL_RESOURCE_ATTRIBUTES: `depot.instance.id=${machineId}`,
+          // TODO: url query encode
+          OTEL_EXPORTER_OTLP_HEADERS: `Authorization=Bearer%20${token}`,
+          // TODO: remove this once we have a proper collector
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: 'http://localhost:6673',
+          OTEL_EXPORTER_OTLP_INSECURE: 'true',
+        },
+      })
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
         // Ignore this error, it's expected when the process is killed.
