@@ -7,7 +7,6 @@
     "clean": "rm -rf dist",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
-    "generate": "buf generate --include-imports && prettier --write src/gen",
     "generate": "buf generate && prettier --write src/gen"
   },
   "dependencies": {
