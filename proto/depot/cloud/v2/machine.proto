@@ -27,7 +27,6 @@ message RegisterMachineResponse {
   oneof task {
     PendingTask pending = 3;
     BuildKitTask buildkit = 4;
-    GitHubActionsTask github_actions = 5;
   }
 
   message Mount {
@@ -46,15 +45,6 @@ message RegisterMachineResponse {
     repeated Mount mounts = 4;
     int32 cache_size = 5;
     optional string trace_endpoint = 6;
-  }
-
-  // GithubActionsTask represents an instruction to start a GitHub Actions runner
-  message GitHubActionsTask {
-    string registration_token = 1;
-    string name = 2;
-    string url = 3;
-    string labels = 4;
-    string runner_version = 5;
   }
 }
 
