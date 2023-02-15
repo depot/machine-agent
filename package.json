@@ -6,7 +6,8 @@
     "build:ts": "esbuild --bundle --outfile=dist/index.js --platform=node --target=node18 src/index.ts",
     "clean": "rm -rf dist",
     "fmt": "prettier --write .",
-    "fmt:check": "prettier --check ."
+    "fmt:check": "prettier --check .",
+    "generate": "buf generate && prettier --write src/gen"
   },
   "dependencies": {
     "@sentry/node": "^7.19.0",
