@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/node'
 import {ClientError, Status} from 'nice-grpc-common'
 import {startBuildKit} from './tasks/buildkit'
-import {startGitHubActions} from './tasks/githubActions'
 import {assertNever, promises, sleep} from './utils/common'
 import {DEPOT_CLOUD_CONNECTION_ID, DEPOT_MACHINE_AGENT_VERSION} from './utils/env'
 import {client} from './utils/grpc'
@@ -43,10 +42,6 @@ async function runLoop() {
 
         case 'buildkit':
           await startBuildKit(message, message.task.buildkit)
-          break
-
-        case 'githubActions':
-          await startGitHubActions(message, message.task.githubActions)
           break
 
         default:

@@ -23,7 +23,6 @@ export interface RegisterMachineResponse {
         $case: 'buildkit'
         buildkit: RegisterMachineResponse_BuildKitTask
       }
-    | {$case: 'githubActions'; githubActions: RegisterMachineResponse_GitHubActionsTask}
 }
 
 export interface RegisterMachineResponse_Mount {
@@ -41,15 +40,7 @@ export interface RegisterMachineResponse_BuildKitTask {
   caCert: Cert | undefined
   mounts: RegisterMachineResponse_Mount[]
   cacheSize: number
-}
-
-/** GithubActionsTask represents an instruction to start a GitHub Actions runner */
-export interface RegisterMachineResponse_GitHubActionsTask {
-  registrationToken: string
-  name: string
-  url: string
-  labels: string
-  runnerVersion: string
+  traceEndpoint?: string | undefined
 }
 
 export interface PingMachineHealthRequest {
@@ -204,9 +195,6 @@ export const RegisterMachineResponse = {
     if (message.task?.$case === 'buildkit') {
       RegisterMachineResponse_BuildKitTask.encode(message.task.buildkit, writer.uint32(34).fork()).ldelim()
     }
-    if (message.task?.$case === 'githubActions') {
-      RegisterMachineResponse_GitHubActionsTask.encode(message.task.githubActions, writer.uint32(42).fork()).ldelim()
-    }
     return writer
   },
 
@@ -235,12 +223,6 @@ export const RegisterMachineResponse = {
             buildkit: RegisterMachineResponse_BuildKitTask.decode(reader, reader.uint32()),
           }
           break
-        case 5:
-          message.task = {
-            $case: 'githubActions',
-            githubActions: RegisterMachineResponse_GitHubActionsTask.decode(reader, reader.uint32()),
-          }
-          break
         default:
           reader.skipType(tag & 7)
           break
@@ -257,11 +239,6 @@ export const RegisterMachineResponse = {
         ? {$case: 'pending', pending: RegisterMachineResponse_PendingTask.fromJSON(object.pending)}
         : isSet(object.buildkit)
         ? {$case: 'buildkit', buildkit: RegisterMachineResponse_BuildKitTask.fromJSON(object.buildkit)}
-        : isSet(object.githubActions)
-        ? {
-            $case: 'githubActions',
-            githubActions: RegisterMachineResponse_GitHubActionsTask.fromJSON(object.githubActions),
-          }
         : undefined,
     }
   },
@@ -277,10 +254,6 @@ export const RegisterMachineResponse = {
     message.task?.$case === 'buildkit' &&
       (obj.buildkit = message.task?.buildkit
         ? RegisterMachineResponse_BuildKitTask.toJSON(message.task?.buildkit)
-        : undefined)
-    message.task?.$case === 'githubActions' &&
-      (obj.githubActions = message.task?.githubActions
-        ? RegisterMachineResponse_GitHubActionsTask.toJSON(message.task?.githubActions)
         : undefined)
     return obj
   },
@@ -299,16 +272,6 @@ export const RegisterMachineResponse = {
       message.task = {
         $case: 'buildkit',
         buildkit: RegisterMachineResponse_BuildKitTask.fromPartial(object.task.buildkit),
-      }
-    }
-    if (
-      object.task?.$case === 'githubActions' &&
-      object.task?.githubActions !== undefined &&
-      object.task?.githubActions !== null
-    ) {
-      message.task = {
-        $case: 'githubActions',
-        githubActions: RegisterMachineResponse_GitHubActionsTask.fromPartial(object.task.githubActions),
       }
     }
     return message
@@ -413,7 +376,7 @@ export const RegisterMachineResponse_PendingTask = {
 }
 
 function createBaseRegisterMachineResponse_BuildKitTask(): RegisterMachineResponse_BuildKitTask {
-  return {serverName: '', cert: undefined, caCert: undefined, mounts: [], cacheSize: 0}
+  return {serverName: '', cert: undefined, caCert: undefined, mounts: [], cacheSize: 0, traceEndpoint: undefined}
 }
 
 export const RegisterMachineResponse_BuildKitTask = {
@@ -432,6 +395,9 @@ export const RegisterMachineResponse_BuildKitTask = {
     }
     if (message.cacheSize !== 0) {
       writer.uint32(40).int32(message.cacheSize)
+    }
+    if (message.traceEndpoint !== undefined) {
+      writer.uint32(50).string(message.traceEndpoint)
     }
     return writer
   },
@@ -458,6 +424,9 @@ export const RegisterMachineResponse_BuildKitTask = {
         case 5:
           message.cacheSize = reader.int32()
           break
+        case 6:
+          message.traceEndpoint = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -475,6 +444,7 @@ export const RegisterMachineResponse_BuildKitTask = {
         ? object.mounts.map((e: any) => RegisterMachineResponse_Mount.fromJSON(e))
         : [],
       cacheSize: isSet(object.cacheSize) ? Number(object.cacheSize) : 0,
+      traceEndpoint: isSet(object.traceEndpoint) ? String(object.traceEndpoint) : undefined,
     }
   },
 
@@ -489,6 +459,7 @@ export const RegisterMachineResponse_BuildKitTask = {
       obj.mounts = []
     }
     message.cacheSize !== undefined && (obj.cacheSize = Math.round(message.cacheSize))
+    message.traceEndpoint !== undefined && (obj.traceEndpoint = message.traceEndpoint)
     return obj
   },
 
@@ -499,93 +470,7 @@ export const RegisterMachineResponse_BuildKitTask = {
     message.caCert = object.caCert !== undefined && object.caCert !== null ? Cert.fromPartial(object.caCert) : undefined
     message.mounts = object.mounts?.map((e) => RegisterMachineResponse_Mount.fromPartial(e)) || []
     message.cacheSize = object.cacheSize ?? 0
-    return message
-  },
-}
-
-function createBaseRegisterMachineResponse_GitHubActionsTask(): RegisterMachineResponse_GitHubActionsTask {
-  return {registrationToken: '', name: '', url: '', labels: '', runnerVersion: ''}
-}
-
-export const RegisterMachineResponse_GitHubActionsTask = {
-  encode(message: RegisterMachineResponse_GitHubActionsTask, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.registrationToken !== '') {
-      writer.uint32(10).string(message.registrationToken)
-    }
-    if (message.name !== '') {
-      writer.uint32(18).string(message.name)
-    }
-    if (message.url !== '') {
-      writer.uint32(26).string(message.url)
-    }
-    if (message.labels !== '') {
-      writer.uint32(34).string(message.labels)
-    }
-    if (message.runnerVersion !== '') {
-      writer.uint32(42).string(message.runnerVersion)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): RegisterMachineResponse_GitHubActionsTask {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseRegisterMachineResponse_GitHubActionsTask()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.registrationToken = reader.string()
-          break
-        case 2:
-          message.name = reader.string()
-          break
-        case 3:
-          message.url = reader.string()
-          break
-        case 4:
-          message.labels = reader.string()
-          break
-        case 5:
-          message.runnerVersion = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): RegisterMachineResponse_GitHubActionsTask {
-    return {
-      registrationToken: isSet(object.registrationToken) ? String(object.registrationToken) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      url: isSet(object.url) ? String(object.url) : '',
-      labels: isSet(object.labels) ? String(object.labels) : '',
-      runnerVersion: isSet(object.runnerVersion) ? String(object.runnerVersion) : '',
-    }
-  },
-
-  toJSON(message: RegisterMachineResponse_GitHubActionsTask): unknown {
-    const obj: any = {}
-    message.registrationToken !== undefined && (obj.registrationToken = message.registrationToken)
-    message.name !== undefined && (obj.name = message.name)
-    message.url !== undefined && (obj.url = message.url)
-    message.labels !== undefined && (obj.labels = message.labels)
-    message.runnerVersion !== undefined && (obj.runnerVersion = message.runnerVersion)
-    return obj
-  },
-
-  fromPartial(
-    object: DeepPartial<RegisterMachineResponse_GitHubActionsTask>,
-  ): RegisterMachineResponse_GitHubActionsTask {
-    const message = createBaseRegisterMachineResponse_GitHubActionsTask()
-    message.registrationToken = object.registrationToken ?? ''
-    message.name = object.name ?? ''
-    message.url = object.url ?? ''
-    message.labels = object.labels ?? ''
-    message.runnerVersion = object.runnerVersion ?? ''
+    message.traceEndpoint = object.traceEndpoint ?? undefined
     return message
   },
 }
