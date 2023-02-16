@@ -2,8 +2,8 @@ import {execa} from 'execa'
 import * as fsp from 'fs/promises'
 import {Metadata} from 'nice-grpc'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/depot/cloud/v2/machine'
-import {reportHealth} from '../utils/health'
 import {ensureMounted} from '../utils/mounts'
+import {reportHealth} from './health'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   for (const mount of task.mounts) {
