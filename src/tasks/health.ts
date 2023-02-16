@@ -21,11 +21,11 @@ export async function reportHealth({machineId, signal, metadata}: ReportHealthPa
   while (true) {
     if (signal.aborted) return
 
-    let workers: BuildKitWorker[] = await listBuildKitWorkers(machineId)
+    let workers: BuildKitWorker[] = await listBuildKitWorkers()
     while (workers.length === 0) {
       console.log('Waiting for BuildKit workers to start')
       await sleep(250)
-      workers = await listBuildKitWorkers(machineId)
+      workers = await listBuildKitWorkers()
     }
 
     try {
@@ -54,13 +54,13 @@ interface BuildKitWorker {
   }
 }
 
-async function listBuildKitWorkers(machineID: string): Promise<BuildKitWorker[]> {
+async function listBuildKitWorkers(): Promise<BuildKitWorker[]> {
   try {
     const res = await execa(
       'buildctl',
       [
         '--tlsservername',
-        machineID,
+        'localhost',
         '--tlscert',
         '/etc/buildkit/tls.crt',
         '--tlskey',
