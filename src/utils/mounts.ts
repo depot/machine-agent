@@ -23,6 +23,14 @@ export async function ensureMounted(device: string, path: string) {
   await execa('mount', ['-t', 'ext4', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
 }
 
+// Bind-mounts the BuildKit executor directory to the ephemeral disk.
+export async function mountExecutor() {
+  await execa('mkdir', ['-p', '/mnt/executor'], {stdio: 'inherit'})
+  await execa('rm', ['-rf', '/var/lib/buildkit/runc-overlayfs/executor'], {stdio: 'inherit'})
+  await execa('mkdir', ['-p', '/var/lib/buildkit/runc-overlayfs/executor'], {stdio: 'inherit'})
+  await execa('mount', ['--bind', '/mnt/executor', '/var/lib/buildkit/runc-overlayfs/executor'], {stdio: 'inherit'})
+}
+
 async function waitForDevice(device: string) {
   while (true) {
     try {

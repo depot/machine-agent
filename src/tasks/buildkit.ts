@@ -2,13 +2,15 @@ import {execa} from 'execa'
 import * as fsp from 'fs/promises'
 import {Metadata} from 'nice-grpc'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/depot/cloud/v2/machine'
-import {ensureMounted} from '../utils/mounts'
+import {ensureMounted, mountExecutor} from '../utils/mounts'
 import {reportHealth} from './health'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   for (const mount of task.mounts) {
     await ensureMounted(mount.device, mount.path)
   }
+
+  await mountExecutor()
 
   const {machineId, token} = message
   const metadata = Metadata({Authorization: `Bearer ${token}`})
