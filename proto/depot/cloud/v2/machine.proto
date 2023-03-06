@@ -50,6 +50,12 @@ message RegisterMachineResponse {
 
 message PingMachineHealthRequest {
   string machine_id = 1;
+  repeated DiskSpace disks = 2;
+}
+
+message DiskSpace {
+  string path = 1;
+  int64 free_mb = 2;
 }
 
 message PingMachineHealthResponse {
