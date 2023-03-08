@@ -90,8 +90,7 @@ keepBytes = ${cacheSizeBytes}
   }
 
   try {
-    const paths = task.mounts.map((mount) => mount.path)
-    await Promise.all([runBuildKit(), reportHealth({machineId, signal, metadata, paths})])
+    await Promise.all([runBuildKit(), reportHealth({machineId, signal, metadata, mounts: task.mounts})])
   } catch (error) {
     throw error
   } finally {

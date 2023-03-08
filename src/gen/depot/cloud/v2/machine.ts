@@ -50,6 +50,7 @@ export interface PingMachineHealthRequest {
 }
 
 export interface DiskSpace {
+  device: string
   path: string
   freeMb: number
   totalMb: number
@@ -548,25 +549,28 @@ export const PingMachineHealthRequest = {
 }
 
 function createBaseDiskSpace(): DiskSpace {
-  return {path: '', freeMb: 0, totalMb: 0, freeInodes: 0, totalInodes: 0}
+  return {device: '', path: '', freeMb: 0, totalMb: 0, freeInodes: 0, totalInodes: 0}
 }
 
 export const DiskSpace = {
   encode(message: DiskSpace, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.device !== '') {
+      writer.uint32(10).string(message.device)
+    }
     if (message.path !== '') {
-      writer.uint32(10).string(message.path)
+      writer.uint32(18).string(message.path)
     }
     if (message.freeMb !== 0) {
-      writer.uint32(16).int64(message.freeMb)
+      writer.uint32(24).int64(message.freeMb)
     }
     if (message.totalMb !== 0) {
-      writer.uint32(24).int64(message.totalMb)
+      writer.uint32(32).int64(message.totalMb)
     }
     if (message.freeInodes !== 0) {
-      writer.uint32(32).int64(message.freeInodes)
+      writer.uint32(40).int64(message.freeInodes)
     }
     if (message.totalInodes !== 0) {
-      writer.uint32(40).int64(message.totalInodes)
+      writer.uint32(48).int64(message.totalInodes)
     }
     return writer
   },
@@ -579,18 +583,21 @@ export const DiskSpace = {
       const tag = reader.uint32()
       switch (tag >>> 3) {
         case 1:
-          message.path = reader.string()
+          message.device = reader.string()
           break
         case 2:
-          message.freeMb = longToNumber(reader.int64() as Long)
+          message.path = reader.string()
           break
         case 3:
-          message.totalMb = longToNumber(reader.int64() as Long)
+          message.freeMb = longToNumber(reader.int64() as Long)
           break
         case 4:
-          message.freeInodes = longToNumber(reader.int64() as Long)
+          message.totalMb = longToNumber(reader.int64() as Long)
           break
         case 5:
+          message.freeInodes = longToNumber(reader.int64() as Long)
+          break
+        case 6:
           message.totalInodes = longToNumber(reader.int64() as Long)
           break
         default:
@@ -603,6 +610,7 @@ export const DiskSpace = {
 
   fromJSON(object: any): DiskSpace {
     return {
+      device: isSet(object.device) ? String(object.device) : '',
       path: isSet(object.path) ? String(object.path) : '',
       freeMb: isSet(object.freeMb) ? Number(object.freeMb) : 0,
       totalMb: isSet(object.totalMb) ? Number(object.totalMb) : 0,
@@ -613,6 +621,7 @@ export const DiskSpace = {
 
   toJSON(message: DiskSpace): unknown {
     const obj: any = {}
+    message.device !== undefined && (obj.device = message.device)
     message.path !== undefined && (obj.path = message.path)
     message.freeMb !== undefined && (obj.freeMb = Math.round(message.freeMb))
     message.totalMb !== undefined && (obj.totalMb = Math.round(message.totalMb))
@@ -623,6 +632,7 @@ export const DiskSpace = {
 
   fromPartial(object: DeepPartial<DiskSpace>): DiskSpace {
     const message = createBaseDiskSpace()
+    message.device = object.device ?? ''
     message.path = object.path ?? ''
     message.freeMb = object.freeMb ?? 0
     message.totalMb = object.totalMb ?? 0

@@ -9,23 +9,29 @@ export interface ReportHealthParams {
   machineId: string
   signal: AbortSignal
   metadata: Metadata
-  paths: string[]
+  mounts: Mount[]
 }
 
-export async function reportHealth({machineId, signal, metadata, paths}: ReportHealthParams) {
+export interface Mount {
+  device: string
+  path: string
+}
+
+export async function reportHealth({machineId, signal, metadata, mounts}: ReportHealthParams) {
   async function* pingHealth() {
     while (true) {
       if (signal.aborted) return
       await sleep(1000)
 
-      const disk_stats = await promises(paths.map(stats))
+      const disk_stats = await promises(mounts.map(({device, path}) => stats(device, path)))
 
       const disks: DiskSpace[] = disk_stats
         .filter((item: DiskStats | undefined): item is DiskStats => {
           return item !== undefined
         })
-        .map(({path, freeMb, totalMb, freeInodes, totalInodes}) => {
+        .map(({device, path, freeMb, totalMb, freeInodes, totalInodes}) => {
           return {
+            device,
             path,
             freeMb,
             totalMb,
