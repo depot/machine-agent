@@ -56,6 +56,9 @@ message PingMachineHealthRequest {
 message DiskSpace {
   string path = 1;
   int64 free_mb = 2;
+  int64 total_mb = 3;
+  int64 free_inodes = 4;
+  int64 total_inodes = 5;
 }
 
 message PingMachineHealthResponse {

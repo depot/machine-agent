@@ -52,6 +52,9 @@ export interface PingMachineHealthRequest {
 export interface DiskSpace {
   path: string
   freeMb: number
+  totalMb: number
+  freeInodes: number
+  totalInodes: number
 }
 
 export interface PingMachineHealthResponse {
@@ -545,7 +548,7 @@ export const PingMachineHealthRequest = {
 }
 
 function createBaseDiskSpace(): DiskSpace {
-  return {path: '', freeMb: 0}
+  return {path: '', freeMb: 0, totalMb: 0, freeInodes: 0, totalInodes: 0}
 }
 
 export const DiskSpace = {
@@ -555,6 +558,15 @@ export const DiskSpace = {
     }
     if (message.freeMb !== 0) {
       writer.uint32(16).int64(message.freeMb)
+    }
+    if (message.totalMb !== 0) {
+      writer.uint32(24).int64(message.totalMb)
+    }
+    if (message.freeInodes !== 0) {
+      writer.uint32(32).int64(message.freeInodes)
+    }
+    if (message.totalInodes !== 0) {
+      writer.uint32(40).int64(message.totalInodes)
     }
     return writer
   },
@@ -572,6 +584,15 @@ export const DiskSpace = {
         case 2:
           message.freeMb = longToNumber(reader.int64() as Long)
           break
+        case 3:
+          message.totalMb = longToNumber(reader.int64() as Long)
+          break
+        case 4:
+          message.freeInodes = longToNumber(reader.int64() as Long)
+          break
+        case 5:
+          message.totalInodes = longToNumber(reader.int64() as Long)
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -584,6 +605,9 @@ export const DiskSpace = {
     return {
       path: isSet(object.path) ? String(object.path) : '',
       freeMb: isSet(object.freeMb) ? Number(object.freeMb) : 0,
+      totalMb: isSet(object.totalMb) ? Number(object.totalMb) : 0,
+      freeInodes: isSet(object.freeInodes) ? Number(object.freeInodes) : 0,
+      totalInodes: isSet(object.totalInodes) ? Number(object.totalInodes) : 0,
     }
   },
 
@@ -591,6 +615,9 @@ export const DiskSpace = {
     const obj: any = {}
     message.path !== undefined && (obj.path = message.path)
     message.freeMb !== undefined && (obj.freeMb = Math.round(message.freeMb))
+    message.totalMb !== undefined && (obj.totalMb = Math.round(message.totalMb))
+    message.freeInodes !== undefined && (obj.freeInodes = Math.round(message.freeInodes))
+    message.totalInodes !== undefined && (obj.totalInodes = Math.round(message.totalInodes))
     return obj
   },
 
@@ -598,6 +625,9 @@ export const DiskSpace = {
     const message = createBaseDiskSpace()
     message.path = object.path ?? ''
     message.freeMb = object.freeMb ?? 0
+    message.totalMb = object.totalMb ?? 0
+    message.freeInodes = object.freeInodes ?? 0
+    message.totalInodes = object.totalInodes ?? 0
     return message
   },
 }

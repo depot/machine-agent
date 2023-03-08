@@ -2,7 +2,7 @@ import {execa} from 'execa'
 import {Metadata} from 'nice-grpc-common'
 import {DiskSpace} from '../gen/depot/cloud/v2/machine'
 import {promises, sleep} from '../utils/common'
-import {availableMegabytes} from '../utils/disk'
+import {DiskStats, stats} from '../utils/disk'
 import {client} from '../utils/grpc'
 
 export interface ReportHealthParams {
@@ -18,16 +18,19 @@ export async function reportHealth({machineId, signal, metadata, paths}: ReportH
       if (signal.aborted) return
       await sleep(1000)
 
-      const disk_sizes = await promises(paths.map(availableMegabytes))
+      const disk_stats = await promises(paths.map(stats))
 
-      const disks: DiskSpace[] = disk_sizes
-        .filter((item: {path: string; freeMb: number} | undefined): item is {path: string; freeMb: number} => {
+      const disks: DiskSpace[] = disk_stats
+        .filter((item: DiskStats | undefined): item is DiskStats => {
           return item !== undefined
         })
-        .map(({path, freeMb}) => {
+        .map(({path, freeMb, totalMb, freeInodes, totalInodes}) => {
           return {
             path,
             freeMb,
+            totalMb,
+            freeInodes,
+            totalInodes,
           }
         })
 
