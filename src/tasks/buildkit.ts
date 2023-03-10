@@ -90,7 +90,7 @@ keepBytes = ${cacheSizeBytes}
   }
 
   try {
-    await Promise.all([runBuildKit(), reportHealth({machineId, signal, metadata})])
+    await Promise.all([runBuildKit(), reportHealth({machineId, signal, metadata, mounts: task.mounts})])
   } catch (error) {
     throw error
   } finally {

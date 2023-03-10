@@ -1,20 +1,46 @@
 import {execa} from 'execa'
 import {Metadata} from 'nice-grpc-common'
-import {sleep} from '../utils/common'
+import {DiskSpace} from '../gen/depot/cloud/v2/machine'
+import {promises, sleep} from '../utils/common'
+import {DiskStats, stats} from '../utils/disk'
 import {client} from '../utils/grpc'
 
 export interface ReportHealthParams {
   machineId: string
   signal: AbortSignal
   metadata: Metadata
+  mounts: Mount[]
 }
 
-export async function reportHealth({machineId, signal, metadata}: ReportHealthParams) {
+export interface Mount {
+  device: string
+  path: string
+}
+
+export async function reportHealth({machineId, signal, metadata, mounts}: ReportHealthParams) {
   async function* pingHealth() {
     while (true) {
       if (signal.aborted) return
       await sleep(1000)
-      yield {machineId}
+
+      const disk_stats = await promises(mounts.map(({device, path}) => stats(device, path)))
+
+      const disks: DiskSpace[] = disk_stats
+        .filter((item: DiskStats | undefined): item is DiskStats => {
+          return item !== undefined
+        })
+        .map(({device, path, freeMb, totalMb, freeInodes, totalInodes}) => {
+          return {
+            device,
+            path,
+            freeMb,
+            totalMb,
+            freeInodes,
+            totalInodes,
+          }
+        })
+
+      yield {machineId, disks}
     }
   }
 

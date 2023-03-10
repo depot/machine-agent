@@ -1,4 +1,5 @@
 /* eslint-disable */
+import Long from 'long'
 import type {CallContext, CallOptions} from 'nice-grpc-common'
 import _m0 from 'protobufjs/minimal'
 
@@ -45,6 +46,16 @@ export interface RegisterMachineResponse_BuildKitTask {
 
 export interface PingMachineHealthRequest {
   machineId: string
+  disks: DiskSpace[]
+}
+
+export interface DiskSpace {
+  device: string
+  path: string
+  freeMb: number
+  totalMb: number
+  freeInodes: number
+  totalInodes: number
 }
 
 export interface PingMachineHealthResponse {
@@ -476,13 +487,16 @@ export const RegisterMachineResponse_BuildKitTask = {
 }
 
 function createBasePingMachineHealthRequest(): PingMachineHealthRequest {
-  return {machineId: ''}
+  return {machineId: '', disks: []}
 }
 
 export const PingMachineHealthRequest = {
   encode(message: PingMachineHealthRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.machineId !== '') {
       writer.uint32(10).string(message.machineId)
+    }
+    for (const v of message.disks) {
+      DiskSpace.encode(v!, writer.uint32(18).fork()).ldelim()
     }
     return writer
   },
@@ -497,6 +511,9 @@ export const PingMachineHealthRequest = {
         case 1:
           message.machineId = reader.string()
           break
+        case 2:
+          message.disks.push(DiskSpace.decode(reader, reader.uint32()))
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -506,18 +523,121 @@ export const PingMachineHealthRequest = {
   },
 
   fromJSON(object: any): PingMachineHealthRequest {
-    return {machineId: isSet(object.machineId) ? String(object.machineId) : ''}
+    return {
+      machineId: isSet(object.machineId) ? String(object.machineId) : '',
+      disks: Array.isArray(object?.disks) ? object.disks.map((e: any) => DiskSpace.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: PingMachineHealthRequest): unknown {
     const obj: any = {}
     message.machineId !== undefined && (obj.machineId = message.machineId)
+    if (message.disks) {
+      obj.disks = message.disks.map((e) => (e ? DiskSpace.toJSON(e) : undefined))
+    } else {
+      obj.disks = []
+    }
     return obj
   },
 
   fromPartial(object: DeepPartial<PingMachineHealthRequest>): PingMachineHealthRequest {
     const message = createBasePingMachineHealthRequest()
     message.machineId = object.machineId ?? ''
+    message.disks = object.disks?.map((e) => DiskSpace.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseDiskSpace(): DiskSpace {
+  return {device: '', path: '', freeMb: 0, totalMb: 0, freeInodes: 0, totalInodes: 0}
+}
+
+export const DiskSpace = {
+  encode(message: DiskSpace, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.device !== '') {
+      writer.uint32(10).string(message.device)
+    }
+    if (message.path !== '') {
+      writer.uint32(18).string(message.path)
+    }
+    if (message.freeMb !== 0) {
+      writer.uint32(24).int64(message.freeMb)
+    }
+    if (message.totalMb !== 0) {
+      writer.uint32(32).int64(message.totalMb)
+    }
+    if (message.freeInodes !== 0) {
+      writer.uint32(40).int64(message.freeInodes)
+    }
+    if (message.totalInodes !== 0) {
+      writer.uint32(48).int64(message.totalInodes)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DiskSpace {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseDiskSpace()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.device = reader.string()
+          break
+        case 2:
+          message.path = reader.string()
+          break
+        case 3:
+          message.freeMb = longToNumber(reader.int64() as Long)
+          break
+        case 4:
+          message.totalMb = longToNumber(reader.int64() as Long)
+          break
+        case 5:
+          message.freeInodes = longToNumber(reader.int64() as Long)
+          break
+        case 6:
+          message.totalInodes = longToNumber(reader.int64() as Long)
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DiskSpace {
+    return {
+      device: isSet(object.device) ? String(object.device) : '',
+      path: isSet(object.path) ? String(object.path) : '',
+      freeMb: isSet(object.freeMb) ? Number(object.freeMb) : 0,
+      totalMb: isSet(object.totalMb) ? Number(object.totalMb) : 0,
+      freeInodes: isSet(object.freeInodes) ? Number(object.freeInodes) : 0,
+      totalInodes: isSet(object.totalInodes) ? Number(object.totalInodes) : 0,
+    }
+  },
+
+  toJSON(message: DiskSpace): unknown {
+    const obj: any = {}
+    message.device !== undefined && (obj.device = message.device)
+    message.path !== undefined && (obj.path = message.path)
+    message.freeMb !== undefined && (obj.freeMb = Math.round(message.freeMb))
+    message.totalMb !== undefined && (obj.totalMb = Math.round(message.totalMb))
+    message.freeInodes !== undefined && (obj.freeInodes = Math.round(message.freeInodes))
+    message.totalInodes !== undefined && (obj.totalInodes = Math.round(message.totalInodes))
+    return obj
+  },
+
+  fromPartial(object: DeepPartial<DiskSpace>): DiskSpace {
+    const message = createBaseDiskSpace()
+    message.device = object.device ?? ''
+    message.path = object.path ?? ''
+    message.freeMb = object.freeMb ?? 0
+    message.totalMb = object.totalMb ?? 0
+    message.freeInodes = object.freeInodes ?? 0
+    message.totalInodes = object.totalInodes ?? 0
     return message
   },
 }
@@ -670,6 +790,25 @@ export interface MachineServiceClient<CallOptionsExt = {}> {
   ): Promise<PingMachineHealthResponse>
 }
 
+declare var self: any | undefined
+declare var window: any | undefined
+declare var global: any | undefined
+var globalThis: any = (() => {
+  if (typeof globalThis !== 'undefined') {
+    return globalThis
+  }
+  if (typeof self !== 'undefined') {
+    return self
+  }
+  if (typeof window !== 'undefined') {
+    return window
+  }
+  if (typeof global !== 'undefined') {
+    return global
+  }
+  throw 'Unable to locate global object'
+})()
+
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined
 
 export type DeepPartial<T> = T extends Builtin
@@ -683,6 +822,18 @@ export type DeepPartial<T> = T extends Builtin
   : T extends {}
   ? {[K in keyof T]?: DeepPartial<T[K]>}
   : Partial<T>
+
+function longToNumber(long: Long): number {
+  if (long.gt(Number.MAX_SAFE_INTEGER)) {
+    throw new globalThis.Error('Value is larger than Number.MAX_SAFE_INTEGER')
+  }
+  return long.toNumber()
+}
+
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any
+  _m0.configure()
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined
