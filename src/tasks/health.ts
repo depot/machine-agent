@@ -1,7 +1,7 @@
 import {execa} from 'execa'
 import {Metadata} from 'nice-grpc-common'
 import {DiskSpace} from '../gen/depot/cloud/v2/machine'
-import {promises, sleep} from '../utils/common'
+import {sleep} from '../utils/common'
 import {DiskStats, stats} from '../utils/disk'
 import {client} from '../utils/grpc'
 
@@ -23,7 +23,7 @@ export async function reportHealth({machineId, signal, metadata, mounts}: Report
       if (signal.aborted) return
       await sleep(1000)
 
-      const disk_stats = await promises(mounts.map(({device, path}) => stats(device, path)))
+      const disk_stats = await Promise.all(mounts.map(({device, path}) => stats(device, path)))
 
       const disks: DiskSpace[] = disk_stats
         .filter((item: DiskStats | undefined): item is DiskStats => {
