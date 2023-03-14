@@ -1,8 +1,13 @@
 import {execa} from 'execa'
 import * as fsp from 'node:fs/promises'
+import {RegisterMachineResponse_Mount_FilesystemType} from '../gen/depot/cloud/v2/machine'
 import {sleep} from './common'
 
-export async function ensureMounted(device: string, path: string) {
+export async function ensureMounted(
+  device: string,
+  path: string,
+  fstype: RegisterMachineResponse_Mount_FilesystemType,
+) {
   await waitForDevice(device)
   const realDevice = await fsp.realpath(device)
 
@@ -15,12 +20,20 @@ export async function ensureMounted(device: string, path: string) {
   const res = await execa('blkid', [realDevice], {reject: false})
   if (res.stdout === '') {
     console.log(`Device ${device} is not formatted`)
-    await execa('mkfs', ['-t', 'ext4', '-T', 'news', realDevice], {stdio: 'inherit'})
+    if (fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS) {
+      await execa('mkfs', ['-t', 'xfs', realDevice], {stdio: 'inherit'})
+    } else {
+      await execa('mkfs', ['-t', 'ext4', '-T', 'news', realDevice], {stdio: 'inherit'})
+    }
   }
 
   console.log(`Mounting ${device} at ${path}`)
   await fsp.mkdir(path, {recursive: true})
-  await execa('mount', ['-t', 'ext4', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
+  if (fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS) {
+    await execa('mount', ['-t', 'xfs', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
+  } else {
+    await execa('mount', ['-t', 'ext4', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
+  }
 }
 
 // Bind-mounts the BuildKit executor directory to the ephemeral disk.

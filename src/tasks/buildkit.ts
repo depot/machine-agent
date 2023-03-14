@@ -7,7 +7,7 @@ import {reportHealth} from './health'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   for (const mount of task.mounts) {
-    await ensureMounted(mount.device, mount.path)
+    await ensureMounted(mount.device, mount.path, mount.fsType)
   }
 
   await mountExecutor()

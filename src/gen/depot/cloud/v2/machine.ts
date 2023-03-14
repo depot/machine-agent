@@ -29,6 +29,50 @@ export interface RegisterMachineResponse {
 export interface RegisterMachineResponse_Mount {
   path: string
   device: string
+  fsType: RegisterMachineResponse_Mount_FilesystemType
+}
+
+export enum RegisterMachineResponse_Mount_FilesystemType {
+  FILESYSTEM_TYPE_UNSPECIFIED = 0,
+  FILESYSTEM_TYPE_EXT4 = 1,
+  FILESYSTEM_TYPE_XFS = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function registerMachineResponse_Mount_FilesystemTypeFromJSON(
+  object: any,
+): RegisterMachineResponse_Mount_FilesystemType {
+  switch (object) {
+    case 0:
+    case 'FILESYSTEM_TYPE_UNSPECIFIED':
+      return RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_UNSPECIFIED
+    case 1:
+    case 'FILESYSTEM_TYPE_EXT4':
+      return RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_EXT4
+    case 2:
+    case 'FILESYSTEM_TYPE_XFS':
+      return RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return RegisterMachineResponse_Mount_FilesystemType.UNRECOGNIZED
+  }
+}
+
+export function registerMachineResponse_Mount_FilesystemTypeToJSON(
+  object: RegisterMachineResponse_Mount_FilesystemType,
+): string {
+  switch (object) {
+    case RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_UNSPECIFIED:
+      return 'FILESYSTEM_TYPE_UNSPECIFIED'
+    case RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_EXT4:
+      return 'FILESYSTEM_TYPE_EXT4'
+    case RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS:
+      return 'FILESYSTEM_TYPE_XFS'
+    case RegisterMachineResponse_Mount_FilesystemType.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
 }
 
 /** PendingTask represents an instruction to wait for a task to be assigned */
@@ -290,7 +334,7 @@ export const RegisterMachineResponse = {
 }
 
 function createBaseRegisterMachineResponse_Mount(): RegisterMachineResponse_Mount {
-  return {path: '', device: ''}
+  return {path: '', device: '', fsType: 0}
 }
 
 export const RegisterMachineResponse_Mount = {
@@ -300,6 +344,9 @@ export const RegisterMachineResponse_Mount = {
     }
     if (message.device !== '') {
       writer.uint32(18).string(message.device)
+    }
+    if (message.fsType !== 0) {
+      writer.uint32(24).int32(message.fsType)
     }
     return writer
   },
@@ -317,6 +364,9 @@ export const RegisterMachineResponse_Mount = {
         case 2:
           message.device = reader.string()
           break
+        case 3:
+          message.fsType = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -329,6 +379,7 @@ export const RegisterMachineResponse_Mount = {
     return {
       path: isSet(object.path) ? String(object.path) : '',
       device: isSet(object.device) ? String(object.device) : '',
+      fsType: isSet(object.fsType) ? registerMachineResponse_Mount_FilesystemTypeFromJSON(object.fsType) : 0,
     }
   },
 
@@ -336,6 +387,7 @@ export const RegisterMachineResponse_Mount = {
     const obj: any = {}
     message.path !== undefined && (obj.path = message.path)
     message.device !== undefined && (obj.device = message.device)
+    message.fsType !== undefined && (obj.fsType = registerMachineResponse_Mount_FilesystemTypeToJSON(message.fsType))
     return obj
   },
 
@@ -343,6 +395,7 @@ export const RegisterMachineResponse_Mount = {
     const message = createBaseRegisterMachineResponse_Mount()
     message.path = object.path ?? ''
     message.device = object.device ?? ''
+    message.fsType = object.fsType ?? 0
     return message
   },
 }

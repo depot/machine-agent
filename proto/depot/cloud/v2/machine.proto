@@ -32,6 +32,13 @@ message RegisterMachineResponse {
   message Mount {
     string path = 1;
     string device = 2;
+    FilesystemType fs_type = 3;
+
+    enum FilesystemType {
+      FILESYSTEM_TYPE_UNSPECIFIED = 0;
+      FILESYSTEM_TYPE_EXT4 = 1;
+      FILESYSTEM_TYPE_XFS = 2;
+    }
   }
 
   // PendingTask represents an instruction to wait for a task to be assigned
