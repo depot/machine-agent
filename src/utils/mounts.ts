@@ -30,9 +30,19 @@ export async function ensureMounted(
   console.log(`Mounting ${device} at ${path}`)
   await fsp.mkdir(path, {recursive: true})
   if (fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS) {
-    await execa('mount', ['-t', 'xfs', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
+    try {
+      await execa('mount', ['-t', 'xfs', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
+    } catch (err: any) {
+      // Try to mount existing volume as ext4 if xfs fails.
+      await execa('mount', ['-t', 'ext4', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
+    }
   } else {
-    await execa('mount', ['-t', 'ext4', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
+    try {
+      await execa('mount', ['-t', 'ext4', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
+    } catch (err: any) {
+      // Try to mount existing volume as xfs if ext4 fails.
+      await execa('mount', ['-t', 'xfs', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
+    }
   }
 }
 
