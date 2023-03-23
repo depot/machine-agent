@@ -38,6 +38,7 @@ message RegisterMachineResponse {
       FILESYSTEM_TYPE_UNSPECIFIED = 0;
       FILESYSTEM_TYPE_EXT4 = 1;
       FILESYSTEM_TYPE_XFS = 2;
+      FILESYSTEM_TYPE_BTRFS = 3;
     }
   }
 
