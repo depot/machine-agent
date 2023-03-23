@@ -22,6 +22,8 @@ export async function ensureMounted(
     console.log(`Device ${device} is not formatted`)
     if (fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS) {
       await execa('mkfs', ['-t', 'xfs', realDevice], {stdio: 'inherit'})
+    } else if (fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_BTRFS) {
+      await execa('mkfs', ['-t', 'btrfs', realDevice], {stdio: 'inherit'})
     } else {
       await execa('mkfs', ['-t', 'ext4', '-T', 'news', realDevice], {stdio: 'inherit'})
     }
@@ -29,23 +31,25 @@ export async function ensureMounted(
 
   console.log(`Mounting ${device} at ${path}`)
   await fsp.mkdir(path, {recursive: true})
-  if (fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS) {
+  await mountDevice(realDevice, path, fstype)
+}
+
+async function mountDevice(device: string, path: string, fstype: RegisterMachineResponse_Mount_FilesystemType) {
+  const types =
+    fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_EXT4
+      ? ['ext4', 'xfs', 'btrfs']
+      : fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS
+      ? ['xfs', 'ext4', 'btrfs']
+      : ['btrfs', 'xfs', 'ext4']
+
+  for (const type of types) {
     try {
-      await execa('mount', ['-t', 'xfs', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
-    } catch (err: any) {
-      console.log(err)
-      // Try to mount existing volume as ext4 if xfs fails.
-      await execa('mount', ['-t', 'ext4', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
-    }
-  } else {
-    try {
-      await execa('mount', ['-t', 'ext4', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
-    } catch (err: any) {
-      console.log(err)
-      // Try to mount existing volume as xfs if ext4 fails.
-      await execa('mount', ['-t', 'xfs', '-o', 'defaults', realDevice, path], {stdio: 'inherit'})
-    }
+      await execa('mount', ['-t', type, '-o', 'defaults', device, path], {stdio: 'inherit'})
+      return
+    } catch {}
   }
+
+  throw new Error(`Failed to mount ${device} at ${path}`)
 }
 
 // Bind-mounts the BuildKit executor directory to the ephemeral disk.

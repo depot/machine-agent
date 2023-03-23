@@ -36,6 +36,7 @@ export enum RegisterMachineResponse_Mount_FilesystemType {
   FILESYSTEM_TYPE_UNSPECIFIED = 0,
   FILESYSTEM_TYPE_EXT4 = 1,
   FILESYSTEM_TYPE_XFS = 2,
+  FILESYSTEM_TYPE_BTRFS = 3,
   UNRECOGNIZED = -1,
 }
 
@@ -52,6 +53,9 @@ export function registerMachineResponse_Mount_FilesystemTypeFromJSON(
     case 2:
     case 'FILESYSTEM_TYPE_XFS':
       return RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS
+    case 3:
+    case 'FILESYSTEM_TYPE_BTRFS':
+      return RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_BTRFS
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -69,6 +73,8 @@ export function registerMachineResponse_Mount_FilesystemTypeToJSON(
       return 'FILESYSTEM_TYPE_EXT4'
     case RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS:
       return 'FILESYSTEM_TYPE_XFS'
+    case RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_BTRFS:
+      return 'FILESYSTEM_TYPE_BTRFS'
     case RegisterMachineResponse_Mount_FilesystemType.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
