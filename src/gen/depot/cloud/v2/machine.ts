@@ -92,6 +92,14 @@ export interface RegisterMachineResponse_BuildKitTask {
   mounts: RegisterMachineResponse_Mount[]
   cacheSize: number
   traceEndpoint?: string | undefined
+  profiler?: RegisterMachineResponse_Profiler | undefined
+}
+
+/** Specifies sending buildkit profiling data to a remote endpoint. */
+export interface RegisterMachineResponse_Profiler {
+  endpoint: string
+  token: string
+  projectId: string
 }
 
 export interface PingMachineHealthRequest {
@@ -446,7 +454,15 @@ export const RegisterMachineResponse_PendingTask = {
 }
 
 function createBaseRegisterMachineResponse_BuildKitTask(): RegisterMachineResponse_BuildKitTask {
-  return {serverName: '', cert: undefined, caCert: undefined, mounts: [], cacheSize: 0, traceEndpoint: undefined}
+  return {
+    serverName: '',
+    cert: undefined,
+    caCert: undefined,
+    mounts: [],
+    cacheSize: 0,
+    traceEndpoint: undefined,
+    profiler: undefined,
+  }
 }
 
 export const RegisterMachineResponse_BuildKitTask = {
@@ -468,6 +484,9 @@ export const RegisterMachineResponse_BuildKitTask = {
     }
     if (message.traceEndpoint !== undefined) {
       writer.uint32(50).string(message.traceEndpoint)
+    }
+    if (message.profiler !== undefined) {
+      RegisterMachineResponse_Profiler.encode(message.profiler, writer.uint32(58).fork()).ldelim()
     }
     return writer
   },
@@ -497,6 +516,9 @@ export const RegisterMachineResponse_BuildKitTask = {
         case 6:
           message.traceEndpoint = reader.string()
           break
+        case 7:
+          message.profiler = RegisterMachineResponse_Profiler.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -515,6 +537,7 @@ export const RegisterMachineResponse_BuildKitTask = {
         : [],
       cacheSize: isSet(object.cacheSize) ? Number(object.cacheSize) : 0,
       traceEndpoint: isSet(object.traceEndpoint) ? String(object.traceEndpoint) : undefined,
+      profiler: isSet(object.profiler) ? RegisterMachineResponse_Profiler.fromJSON(object.profiler) : undefined,
     }
   },
 
@@ -530,6 +553,8 @@ export const RegisterMachineResponse_BuildKitTask = {
     }
     message.cacheSize !== undefined && (obj.cacheSize = Math.round(message.cacheSize))
     message.traceEndpoint !== undefined && (obj.traceEndpoint = message.traceEndpoint)
+    message.profiler !== undefined &&
+      (obj.profiler = message.profiler ? RegisterMachineResponse_Profiler.toJSON(message.profiler) : undefined)
     return obj
   },
 
@@ -541,6 +566,77 @@ export const RegisterMachineResponse_BuildKitTask = {
     message.mounts = object.mounts?.map((e) => RegisterMachineResponse_Mount.fromPartial(e)) || []
     message.cacheSize = object.cacheSize ?? 0
     message.traceEndpoint = object.traceEndpoint ?? undefined
+    message.profiler =
+      object.profiler !== undefined && object.profiler !== null
+        ? RegisterMachineResponse_Profiler.fromPartial(object.profiler)
+        : undefined
+    return message
+  },
+}
+
+function createBaseRegisterMachineResponse_Profiler(): RegisterMachineResponse_Profiler {
+  return {endpoint: '', token: '', projectId: ''}
+}
+
+export const RegisterMachineResponse_Profiler = {
+  encode(message: RegisterMachineResponse_Profiler, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.endpoint !== '') {
+      writer.uint32(10).string(message.endpoint)
+    }
+    if (message.token !== '') {
+      writer.uint32(18).string(message.token)
+    }
+    if (message.projectId !== '') {
+      writer.uint32(26).string(message.projectId)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): RegisterMachineResponse_Profiler {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseRegisterMachineResponse_Profiler()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.endpoint = reader.string()
+          break
+        case 2:
+          message.token = reader.string()
+          break
+        case 3:
+          message.projectId = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): RegisterMachineResponse_Profiler {
+    return {
+      endpoint: isSet(object.endpoint) ? String(object.endpoint) : '',
+      token: isSet(object.token) ? String(object.token) : '',
+      projectId: isSet(object.projectId) ? String(object.projectId) : '',
+    }
+  },
+
+  toJSON(message: RegisterMachineResponse_Profiler): unknown {
+    const obj: any = {}
+    message.endpoint !== undefined && (obj.endpoint = message.endpoint)
+    message.token !== undefined && (obj.token = message.token)
+    message.projectId !== undefined && (obj.projectId = message.projectId)
+    return obj
+  },
+
+  fromPartial(object: DeepPartial<RegisterMachineResponse_Profiler>): RegisterMachineResponse_Profiler {
+    const message = createBaseRegisterMachineResponse_Profiler()
+    message.endpoint = object.endpoint ?? ''
+    message.token = object.token ?? ''
+    message.projectId = object.projectId ?? ''
     return message
   },
 }

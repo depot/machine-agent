@@ -53,6 +53,14 @@ message RegisterMachineResponse {
     repeated Mount mounts = 4;
     int32 cache_size = 5;
     optional string trace_endpoint = 6;
+    optional Profiler profiler = 7;
+  }
+
+  // Specifies sending buildkit profiling data to a remote endpoint.
+  message Profiler {
+    string endpoint = 1;
+    string token = 2;
+    string project_id = 3;
   }
 }
 
