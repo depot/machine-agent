@@ -54,6 +54,12 @@ async function mountDevice(device: string, path: string, fstype: RegisterMachine
 
 // Bind-mounts the BuildKit executor directory to the ephemeral disk.
 export async function mountExecutor() {
+  const mounts = await fsp.readFile('/proc/mounts', 'utf8')
+  if (mounts.includes('/var/lib/buildkit/runc-overlayfs/executor')) {
+    console.log(`Executor dir is already mounted`)
+    return
+  }
+
   await execa('mkdir', ['-p', '/mnt/executor'], {stdio: 'inherit'})
   await execa('rm', ['-rf', '/var/lib/buildkit/runc-overlayfs/executor'], {stdio: 'inherit'})
   await execa('mkdir', ['-p', '/var/lib/buildkit/runc-overlayfs/executor'], {stdio: 'inherit'})
