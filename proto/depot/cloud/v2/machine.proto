@@ -54,6 +54,7 @@ message RegisterMachineResponse {
     int32 cache_size = 5;
     optional string trace_endpoint = 6;
     optional Profiler profiler = 7;
+    optional bool disable_parallel_gzip = 8;
   }
 
   // Specifies sending buildkit profiling data to a remote endpoint.

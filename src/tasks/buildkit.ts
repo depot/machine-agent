@@ -62,31 +62,33 @@ keepBytes = ${cacheSizeBytes}
   const controller = new AbortController()
   const signal = controller.signal
 
-  const traceEnv = task.traceEndpoint
-    ? {
-        OTEL_TRACES_EXPORTER: 'otlp',
-        OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: 'grpc',
-        OTEL_EXPORTER_OTLP_COMPRESSION: 'gzip',
-        OTEL_RESOURCE_ATTRIBUTES: `depot.machine.id=${encodeURIComponent(machineId)}`,
-        OTEL_EXPORTER_OTLP_HEADERS: `Authorization=${encodeURIComponent(`Bearer ${token}`)}`,
-        OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: task.traceEndpoint,
-      }
-    : undefined
+  const env: Record<string, string> = {}
 
-  const profilerEnv = task.profiler
-    ? {
-        PROFILER_ENDPOINT: task.profiler.endpoint,
-        PROFILER_TOKEN: task.profiler.token,
-        PROFILER_PROJECT_ID: task.profiler.projectId,
-      }
-    : undefined
+  if (task.traceEndpoint) {
+    env.OTEL_TRACES_EXPORTER = 'otlp'
+    env.OTEL_EXPORTER_OTLP_TRACES_PROTOCOL = 'grpc'
+    env.OTEL_EXPORTER_OTLP_COMPRESSION = 'gzip'
+    env.OTEL_RESOURCE_ATTRIBUTES = `depot.machine.id=${encodeURIComponent(machineId)}`
+    env.OTEL_EXPORTER_OTLP_HEADERS = `Authorization=${encodeURIComponent(`Bearer ${token}`)}`
+    env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = task.traceEndpoint
+  }
+
+  if (task.profiler) {
+    env.PROFILER_ENDPOINT = task.profiler.endpoint
+    env.PROFILER_TOKEN = task.profiler.token
+    env.PROFILER_PROJECT_ID = task.profiler.projectId
+  }
+
+  if (task.disableParallelGzip) {
+    env.DEPOT_DISABLE_PARALLEL_GZIP = '1'
+  }
 
   async function runBuildKit() {
     try {
       await execa('/usr/bin/buildkitd', [], {
         stdio: 'inherit',
         signal,
-        env: traceEnv && profilerEnv ? {...traceEnv, ...profilerEnv} : traceEnv || profilerEnv,
+        env,
       })
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
