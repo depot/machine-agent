@@ -93,6 +93,7 @@ export interface RegisterMachineResponse_BuildKitTask {
   cacheSize: number
   traceEndpoint?: string | undefined
   profiler?: RegisterMachineResponse_Profiler | undefined
+  disableParallelGzip?: boolean | undefined
 }
 
 /** Specifies sending buildkit profiling data to a remote endpoint. */
@@ -462,6 +463,7 @@ function createBaseRegisterMachineResponse_BuildKitTask(): RegisterMachineRespon
     cacheSize: 0,
     traceEndpoint: undefined,
     profiler: undefined,
+    disableParallelGzip: undefined,
   }
 }
 
@@ -487,6 +489,9 @@ export const RegisterMachineResponse_BuildKitTask = {
     }
     if (message.profiler !== undefined) {
       RegisterMachineResponse_Profiler.encode(message.profiler, writer.uint32(58).fork()).ldelim()
+    }
+    if (message.disableParallelGzip !== undefined) {
+      writer.uint32(64).bool(message.disableParallelGzip)
     }
     return writer
   },
@@ -519,6 +524,9 @@ export const RegisterMachineResponse_BuildKitTask = {
         case 7:
           message.profiler = RegisterMachineResponse_Profiler.decode(reader, reader.uint32())
           break
+        case 8:
+          message.disableParallelGzip = reader.bool()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -538,6 +546,7 @@ export const RegisterMachineResponse_BuildKitTask = {
       cacheSize: isSet(object.cacheSize) ? Number(object.cacheSize) : 0,
       traceEndpoint: isSet(object.traceEndpoint) ? String(object.traceEndpoint) : undefined,
       profiler: isSet(object.profiler) ? RegisterMachineResponse_Profiler.fromJSON(object.profiler) : undefined,
+      disableParallelGzip: isSet(object.disableParallelGzip) ? Boolean(object.disableParallelGzip) : undefined,
     }
   },
 
@@ -555,6 +564,7 @@ export const RegisterMachineResponse_BuildKitTask = {
     message.traceEndpoint !== undefined && (obj.traceEndpoint = message.traceEndpoint)
     message.profiler !== undefined &&
       (obj.profiler = message.profiler ? RegisterMachineResponse_Profiler.toJSON(message.profiler) : undefined)
+    message.disableParallelGzip !== undefined && (obj.disableParallelGzip = message.disableParallelGzip)
     return obj
   },
 
@@ -570,6 +580,7 @@ export const RegisterMachineResponse_BuildKitTask = {
       object.profiler !== undefined && object.profiler !== null
         ? RegisterMachineResponse_Profiler.fromPartial(object.profiler)
         : undefined
+    message.disableParallelGzip = object.disableParallelGzip ?? undefined
     return message
   },
 }
