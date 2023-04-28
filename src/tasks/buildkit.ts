@@ -3,7 +3,7 @@ import * as fsp from 'fs/promises'
 import {Metadata} from 'nice-grpc'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/depot/cloud/v2/machine'
 import {ensureMounted, mountExecutor} from '../utils/mounts'
-import {reportHealth} from './health'
+import {reportHealth, waitForBuildKitWorkers} from './health'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   for (const mount of task.mounts) {
@@ -83,13 +83,33 @@ keepBytes = ${cacheSizeBytes}
     env.DEPOT_DISABLE_PARALLEL_GZIP = '1'
   }
 
+  const buildkitStatus = {ready: false}
+
   async function runBuildKit() {
     try {
-      await execa('/usr/bin/buildkitd', [], {
+      const buildkit = execa('/usr/bin/buildkitd', [], {
         stdio: 'inherit',
         signal,
         env,
       })
+
+      try {
+        if (task.runGcBeforeStart) {
+          await waitForBuildKitWorkers(signal)
+          await execa('/usr/bin/buildctl', ['prune', '--keep-storage', (task.cacheSize * 1024).toString()], {
+            stdio: 'inherit',
+            signal,
+            env,
+          })
+        }
+      } catch (error) {
+        // ignore errors attempting to GC
+        console.error('Unable to run GC', error)
+      } finally {
+        buildkitStatus.ready = true
+      }
+
+      await buildkit
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
         // Ignore this error, it's expected when the process is killed.
@@ -102,7 +122,7 @@ keepBytes = ${cacheSizeBytes}
   }
 
   try {
-    await Promise.all([runBuildKit(), reportHealth({machineId, signal, metadata, mounts: task.mounts})])
+    await Promise.all([runBuildKit(), reportHealth({buildkitStatus, machineId, signal, metadata, mounts: task.mounts})])
   } catch (error) {
     throw error
   } finally {

@@ -94,6 +94,7 @@ export interface RegisterMachineResponse_BuildKitTask {
   traceEndpoint?: string | undefined
   profiler?: RegisterMachineResponse_Profiler | undefined
   disableParallelGzip?: boolean | undefined
+  runGcBeforeStart?: boolean | undefined
 }
 
 /** Specifies sending buildkit profiling data to a remote endpoint. */
@@ -464,6 +465,7 @@ function createBaseRegisterMachineResponse_BuildKitTask(): RegisterMachineRespon
     traceEndpoint: undefined,
     profiler: undefined,
     disableParallelGzip: undefined,
+    runGcBeforeStart: undefined,
   }
 }
 
@@ -492,6 +494,9 @@ export const RegisterMachineResponse_BuildKitTask = {
     }
     if (message.disableParallelGzip !== undefined) {
       writer.uint32(64).bool(message.disableParallelGzip)
+    }
+    if (message.runGcBeforeStart !== undefined) {
+      writer.uint32(72).bool(message.runGcBeforeStart)
     }
     return writer
   },
@@ -527,6 +532,9 @@ export const RegisterMachineResponse_BuildKitTask = {
         case 8:
           message.disableParallelGzip = reader.bool()
           break
+        case 9:
+          message.runGcBeforeStart = reader.bool()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -547,6 +555,7 @@ export const RegisterMachineResponse_BuildKitTask = {
       traceEndpoint: isSet(object.traceEndpoint) ? String(object.traceEndpoint) : undefined,
       profiler: isSet(object.profiler) ? RegisterMachineResponse_Profiler.fromJSON(object.profiler) : undefined,
       disableParallelGzip: isSet(object.disableParallelGzip) ? Boolean(object.disableParallelGzip) : undefined,
+      runGcBeforeStart: isSet(object.runGcBeforeStart) ? Boolean(object.runGcBeforeStart) : undefined,
     }
   },
 
@@ -565,6 +574,7 @@ export const RegisterMachineResponse_BuildKitTask = {
     message.profiler !== undefined &&
       (obj.profiler = message.profiler ? RegisterMachineResponse_Profiler.toJSON(message.profiler) : undefined)
     message.disableParallelGzip !== undefined && (obj.disableParallelGzip = message.disableParallelGzip)
+    message.runGcBeforeStart !== undefined && (obj.runGcBeforeStart = message.runGcBeforeStart)
     return obj
   },
 
@@ -581,6 +591,7 @@ export const RegisterMachineResponse_BuildKitTask = {
         ? RegisterMachineResponse_Profiler.fromPartial(object.profiler)
         : undefined
     message.disableParallelGzip = object.disableParallelGzip ?? undefined
+    message.runGcBeforeStart = object.runGcBeforeStart ?? undefined
     return message
   },
 }
