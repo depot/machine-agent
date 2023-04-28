@@ -6,6 +6,7 @@ import {DiskStats, stats} from '../utils/disk'
 import {client} from '../utils/grpc'
 
 export interface ReportHealthParams {
+  buildkitStatus: {ready: boolean}
   machineId: string
   signal: AbortSignal
   metadata: Metadata
@@ -17,7 +18,7 @@ export interface Mount {
   path: string
 }
 
-export async function reportHealth({machineId, signal, metadata, mounts}: ReportHealthParams) {
+export async function reportHealth({buildkitStatus, machineId, signal, metadata, mounts}: ReportHealthParams) {
   async function* pingHealth() {
     while (true) {
       if (signal.aborted) return
@@ -47,12 +48,13 @@ export async function reportHealth({machineId, signal, metadata, mounts}: Report
   while (true) {
     if (signal.aborted) return
 
-    let workers: BuildKitWorker[] = await listBuildKitWorkers()
-    while (workers.length === 0) {
-      console.log('Waiting for BuildKit workers to start')
-      await sleep(250)
-      workers = await listBuildKitWorkers()
+    // Wait for ready signal
+    if (!buildkitStatus.ready && !signal.aborted) {
+      await sleep(100)
+      continue
     }
+
+    await waitForBuildKitWorkers(signal)
 
     try {
       await client.pingMachineHealth(pingHealth(), {metadata, signal})
@@ -60,6 +62,15 @@ export async function reportHealth({machineId, signal, metadata, mounts}: Report
       console.log('Error reporting health:', error)
     }
     await sleep(1000)
+  }
+}
+
+export async function waitForBuildKitWorkers(signal: AbortSignal) {
+  let workers: BuildKitWorker[] = await listBuildKitWorkers()
+  while (!signal.aborted && workers.length === 0) {
+    console.log('Waiting for BuildKit workers to start')
+    await sleep(250)
+    workers = await listBuildKitWorkers()
   }
 }
 

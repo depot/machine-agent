@@ -55,6 +55,7 @@ message RegisterMachineResponse {
     optional string trace_endpoint = 6;
     optional Profiler profiler = 7;
     optional bool disable_parallel_gzip = 8;
+    optional bool run_gc_before_start = 9;
   }
 
   // Specifies sending buildkit profiling data to a remote endpoint.
