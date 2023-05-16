@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package depot.cloud.v2;
 
-import "google/protobuf/timestamp.proto";
-
 service MachineService {
   rpc RegisterMachine(RegisterMachineRequest) returns (stream RegisterMachineResponse);
   rpc PingMachineHealth(stream PingMachineHealthRequest) returns (PingMachineHealthResponse);
@@ -56,6 +54,7 @@ message RegisterMachineResponse {
     optional Profiler profiler = 7;
     optional bool disable_parallel_gzip = 8;
     optional bool run_gc_before_start = 9;
+    optional string scheduler_debug_token = 10;
   }
 
   // Specifies sending buildkit profiling data to a remote endpoint.
