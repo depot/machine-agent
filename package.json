@@ -10,9 +10,11 @@
     "generate": "buf generate && prettier --write src/gen"
   },
   "dependencies": {
+    "@axiomhq/axiom-node": "^0.12.0",
     "@sentry/node": "^7.19.0",
     "dotenv": "^16.0.3",
     "execa": "^6.1.0",
+    "line-transform-stream": "^1.0.0",
     "long": "4.x.x",
     "nice-grpc": "^2.0.1",
     "nice-grpc-common": "^2.0.0",
