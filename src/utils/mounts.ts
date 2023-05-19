@@ -1,6 +1,6 @@
 import {execa} from 'execa'
 import * as fsp from 'node:fs/promises'
-import {RegisterMachineResponse_Mount_FilesystemType} from '../gen/depot/cloud/v2/machine'
+import {RegisterMachineResponse_Mount_FilesystemType} from '../gen/ts/depot/cloud/v2/machine_pb'
 import {sleep} from './common'
 
 export async function ensureMounted(
@@ -20,9 +20,9 @@ export async function ensureMounted(
   const res = await execa('blkid', [realDevice], {reject: false})
   if (res.stdout === '') {
     console.log(`Device ${device} is not formatted`)
-    if (fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS) {
+    if (fstype === RegisterMachineResponse_Mount_FilesystemType.XFS) {
       await execa('mkfs', ['-t', 'xfs', realDevice], {stdio: 'inherit'})
-    } else if (fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_BTRFS) {
+    } else if (fstype === RegisterMachineResponse_Mount_FilesystemType.BTRFS) {
       await execa('mkfs', ['-t', 'btrfs', realDevice], {stdio: 'inherit'})
     } else {
       await execa('mkfs', ['-t', 'ext4', '-T', 'news', realDevice], {stdio: 'inherit'})
@@ -36,9 +36,9 @@ export async function ensureMounted(
 
 async function mountDevice(device: string, path: string, fstype: RegisterMachineResponse_Mount_FilesystemType) {
   const types =
-    fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_EXT4
+    fstype === RegisterMachineResponse_Mount_FilesystemType.EXT4
       ? ['ext4', 'xfs', 'btrfs']
-      : fstype === RegisterMachineResponse_Mount_FilesystemType.FILESYSTEM_TYPE_XFS
+      : fstype === RegisterMachineResponse_Mount_FilesystemType.XFS
       ? ['xfs', 'ext4', 'btrfs']
       : ['btrfs', 'xfs', 'ext4']
 

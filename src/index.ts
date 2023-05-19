@@ -1,5 +1,5 @@
+import {Code, ConnectError} from '@bufbuild/connect'
 import * as Sentry from '@sentry/node'
-import {ClientError, Status} from 'nice-grpc-common'
 import {startBuildKit} from './tasks/buildkit'
 import {assertNever, promises, sleep} from './utils/common'
 import {DEPOT_CLOUD_CONNECTION_ID, DEPOT_MACHINE_AGENT_VERSION} from './utils/env'
@@ -30,18 +30,19 @@ async function main() {
 async function runLoop() {
   try {
     const aws = await promises({document: getInstanceIdentityDocument(), signature: getBase64Signature()})
-    const stream = client.registerMachine({connectionId: DEPOT_CLOUD_CONNECTION_ID, cloud: {$case: 'aws', aws}})
+    const stream = client.registerMachine({connectionId: DEPOT_CLOUD_CONNECTION_ID, cloud: {case: 'aws', value: aws}})
 
     for await (const message of stream) {
       if (!message.task) continue
 
-      switch (message.task?.$case) {
+      switch (message.task?.case) {
         case 'pending':
+        case undefined:
           await sleep(1000)
           break
 
         case 'buildkit':
-          await startBuildKit(message, message.task.buildkit)
+          await startBuildKit(message, message.task.value)
           break
 
         default:
@@ -49,7 +50,7 @@ async function runLoop() {
       }
     }
   } catch (err) {
-    if (err instanceof ClientError && err.code === Status.INTERNAL && err.details.includes('RST_STREAM')) {
+    if (err instanceof ConnectError && err.code === Code.Internal && err.message.includes('RST_STREAM')) {
       console.log('Connection closed by server')
     } else {
       throw err

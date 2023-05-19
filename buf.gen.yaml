@@ -1,20 +1,12 @@
 version: v1
-
-managed:
-  enabled: true
-  go_package_prefix:
-    default: github.com/depot/machine-agent/pkg/proto
-    except:
-      - buf.build/googleapis/googleapis
-
 plugins:
-  - name: ts
-    out: src/gen
-    strategy: all
-    path: node_modules/ts-proto/protoc-gen-ts_proto
+  - name: es
+    out: src/gen/ts
     opt:
-      - esModuleInterop=true
-      - oneof=unions
-      - outputServices=nice-grpc
-      - outputServices=generic-definitions
-      - useExactTypes=false
+      - target=ts
+      - import_extension=none
+  - name: connect-es
+    out: src/gen/ts
+    opt:
+      - target=ts
+      - import_extension=none
