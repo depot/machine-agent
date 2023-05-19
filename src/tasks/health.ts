@@ -1,6 +1,6 @@
+import {PlainMessage} from '@bufbuild/protobuf'
 import {execa} from 'execa'
-import {Metadata} from 'nice-grpc-common'
-import {DiskSpace} from '../gen/depot/cloud/v2/machine'
+import {DiskSpace} from '../gen/ts/depot/cloud/v2/machine_pb'
 import {sleep} from '../utils/common'
 import {DiskStats, stats} from '../utils/disk'
 import {client} from '../utils/grpc'
@@ -9,7 +9,7 @@ export interface ReportHealthParams {
   buildkitStatus: {ready: boolean}
   machineId: string
   signal: AbortSignal
-  metadata: Metadata
+  headers: HeadersInit
   mounts: Mount[]
 }
 
@@ -18,7 +18,7 @@ export interface Mount {
   path: string
 }
 
-export async function reportHealth({buildkitStatus, machineId, signal, metadata, mounts}: ReportHealthParams) {
+export async function reportHealth({buildkitStatus, machineId, signal, headers, mounts}: ReportHealthParams) {
   async function* pingHealth() {
     while (true) {
       if (signal.aborted) return
@@ -26,7 +26,7 @@ export async function reportHealth({buildkitStatus, machineId, signal, metadata,
 
       const disk_stats = await Promise.all(mounts.map(({device, path}) => stats(device, path)))
 
-      const disks: DiskSpace[] = disk_stats
+      const disks: PlainMessage<DiskSpace>[] = disk_stats
         .filter((item: DiskStats | undefined): item is DiskStats => {
           return item !== undefined
         })
@@ -57,7 +57,7 @@ export async function reportHealth({buildkitStatus, machineId, signal, metadata,
     await waitForBuildKitWorkers(signal)
 
     try {
-      await client.pingMachineHealth(pingHealth(), {metadata, signal})
+      await client.pingMachineHealth(pingHealth(), {headers, signal})
     } catch (error) {
       console.log('Error reporting health:', error)
     }

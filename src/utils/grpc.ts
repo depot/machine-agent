@@ -1,14 +1,17 @@
-import {createChannel, createClient, Metadata} from 'nice-grpc'
-import {MachineServiceClient, MachineServiceDefinition} from '../gen/depot/cloud/v2/machine'
+import {createPromiseClient, Interceptor} from '@bufbuild/connect'
+import {createConnectTransport} from '@bufbuild/connect-node'
+import {MachineService} from '../gen/ts/depot/cloud/v2/machine_connect'
 import {DEPOT_CLOUD_API_HOST, DEPOT_MACHINE_AGENT_VERSION} from './env'
 
-const channel = createChannel(DEPOT_CLOUD_API_HOST)
+const userAgentInterceptor: Interceptor = (next) => async (req) => {
+  req.header.set('User-Agent', `machine-agent/${DEPOT_MACHINE_AGENT_VERSION}`)
+  return await next(req)
+}
 
-export const client: MachineServiceClient = createClient(MachineServiceDefinition, channel, {
-  '*': {
-    metadata: Metadata({
-      // Authorization: `Bearer ${CLOUD_AGENT_CONNECTION_TOKEN}`,
-      'User-Agent': `machine-agent/${DEPOT_MACHINE_AGENT_VERSION}`,
-    }),
-  },
+const transport = createConnectTransport({
+  httpVersion: '2',
+  baseUrl: DEPOT_CLOUD_API_HOST,
+  interceptors: [userAgentInterceptor],
 })
+
+export const client = createPromiseClient(MachineService, transport)
