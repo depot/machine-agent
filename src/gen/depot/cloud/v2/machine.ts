@@ -95,7 +95,7 @@ export interface RegisterMachineResponse_BuildKitTask {
   profiler?: RegisterMachineResponse_Profiler | undefined
   disableParallelGzip?: boolean | undefined
   runGcBeforeStart?: boolean | undefined
-  schedulerDebugToken?: string | undefined
+  enableSchedulerDebug?: boolean | undefined
 }
 
 /** Specifies sending buildkit profiling data to a remote endpoint. */
@@ -467,7 +467,7 @@ function createBaseRegisterMachineResponse_BuildKitTask(): RegisterMachineRespon
     profiler: undefined,
     disableParallelGzip: undefined,
     runGcBeforeStart: undefined,
-    schedulerDebugToken: undefined,
+    enableSchedulerDebug: undefined,
   }
 }
 
@@ -500,8 +500,8 @@ export const RegisterMachineResponse_BuildKitTask = {
     if (message.runGcBeforeStart !== undefined) {
       writer.uint32(72).bool(message.runGcBeforeStart)
     }
-    if (message.schedulerDebugToken !== undefined) {
-      writer.uint32(82).string(message.schedulerDebugToken)
+    if (message.enableSchedulerDebug !== undefined) {
+      writer.uint32(88).bool(message.enableSchedulerDebug)
     }
     return writer
   },
@@ -540,8 +540,8 @@ export const RegisterMachineResponse_BuildKitTask = {
         case 9:
           message.runGcBeforeStart = reader.bool()
           break
-        case 10:
-          message.schedulerDebugToken = reader.string()
+        case 11:
+          message.enableSchedulerDebug = reader.bool()
           break
         default:
           reader.skipType(tag & 7)
@@ -564,7 +564,7 @@ export const RegisterMachineResponse_BuildKitTask = {
       profiler: isSet(object.profiler) ? RegisterMachineResponse_Profiler.fromJSON(object.profiler) : undefined,
       disableParallelGzip: isSet(object.disableParallelGzip) ? Boolean(object.disableParallelGzip) : undefined,
       runGcBeforeStart: isSet(object.runGcBeforeStart) ? Boolean(object.runGcBeforeStart) : undefined,
-      schedulerDebugToken: isSet(object.schedulerDebugToken) ? String(object.schedulerDebugToken) : undefined,
+      enableSchedulerDebug: isSet(object.enableSchedulerDebug) ? Boolean(object.enableSchedulerDebug) : undefined,
     }
   },
 
@@ -584,7 +584,7 @@ export const RegisterMachineResponse_BuildKitTask = {
       (obj.profiler = message.profiler ? RegisterMachineResponse_Profiler.toJSON(message.profiler) : undefined)
     message.disableParallelGzip !== undefined && (obj.disableParallelGzip = message.disableParallelGzip)
     message.runGcBeforeStart !== undefined && (obj.runGcBeforeStart = message.runGcBeforeStart)
-    message.schedulerDebugToken !== undefined && (obj.schedulerDebugToken = message.schedulerDebugToken)
+    message.enableSchedulerDebug !== undefined && (obj.enableSchedulerDebug = message.enableSchedulerDebug)
     return obj
   },
 
@@ -602,7 +602,7 @@ export const RegisterMachineResponse_BuildKitTask = {
         : undefined
     message.disableParallelGzip = object.disableParallelGzip ?? undefined
     message.runGcBeforeStart = object.runGcBeforeStart ?? undefined
-    message.schedulerDebugToken = object.schedulerDebugToken ?? undefined
+    message.enableSchedulerDebug = object.enableSchedulerDebug ?? undefined
     return message
   },
 }

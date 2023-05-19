@@ -54,7 +54,8 @@ message RegisterMachineResponse {
     optional Profiler profiler = 7;
     optional bool disable_parallel_gzip = 8;
     optional bool run_gc_before_start = 9;
-    optional string scheduler_debug_token = 10;
+    reserved 10;
+    optional bool enable_scheduler_debug = 11;
   }
 
   // Specifies sending buildkit profiling data to a remote endpoint.

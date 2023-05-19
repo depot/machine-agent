@@ -1,7 +1,5 @@
-import {Client, ContentEncoding, ContentType} from '@axiomhq/axiom-node'
 import {execa} from 'execa'
 import * as fsp from 'fs/promises'
-import LineTransformStream from 'line-transform-stream'
 import {Metadata} from 'nice-grpc'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/depot/cloud/v2/machine'
 import {ensureMounted, mountExecutor} from '../utils/mounts'
@@ -85,7 +83,7 @@ keepBytes = ${cacheSizeBytes}
     env.DEPOT_DISABLE_PARALLEL_GZIP = '1'
   }
 
-  if (task.schedulerDebugToken) {
+  if (task.enableSchedulerDebug) {
     env.BUILDKIT_SCHEDULER_DEBUG = '1'
   }
 
@@ -93,25 +91,7 @@ keepBytes = ${cacheSizeBytes}
 
   async function runBuildKit() {
     try {
-      const buildkit = execa('/usr/bin/buildkitd', [], {
-        stdout: 'pipe',
-        stderr: 'pipe',
-        signal,
-        env,
-      })
-
-      buildkit.stdout?.pipe(process.stdout)
-      buildkit.stderr?.pipe(process.stderr)
-
-      let debugLogTask: Promise<any> = Promise.resolve()
-      if (task.schedulerDebugToken) {
-        const client = new Client({token: task.schedulerDebugToken, orgId: 'depot-rgep'})
-        const stream = new LineTransformStream((line) => JSON.stringify({line, machineID: machineId}))
-        buildkit.stdout?.pipe(stream)
-        buildkit.stderr?.pipe(stream)
-        debugLogTask = client.ingest('buildkit', stream, ContentType.NDJSON, ContentEncoding.Identity)
-      }
-
+      const buildkit = execa('/usr/bin/buildkitd', [], {stdio: 'inherit', signal, env})
       try {
         if (task.runGcBeforeStart) {
           await waitForBuildKitWorkers(signal)
@@ -129,7 +109,6 @@ keepBytes = ${cacheSizeBytes}
       }
 
       await buildkit
-      await debugLogTask
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
         // Ignore this error, it's expected when the process is killed.
