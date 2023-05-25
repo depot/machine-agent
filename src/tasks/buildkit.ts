@@ -61,7 +61,9 @@ keepBytes = ${cacheSizeBytes}
   const controller = new AbortController()
   const signal = controller.signal
 
-  const env: Record<string, string> = {}
+  const env: Record<string, string> = {
+    BUILDKIT_STEP_LOG_MAX_SIZE: '52428800', // 50 MB
+  }
 
   if (task.traceEndpoint) {
     env.OTEL_TRACES_EXPORTER = 'otlp'
