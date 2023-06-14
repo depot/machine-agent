@@ -84,6 +84,10 @@ keepBytes = ${cacheSizeBytes}
     env.DEPOT_DISABLE_PARALLEL_GZIP = '1'
   }
 
+  if (task.disableMergeTo) {
+    env.DEPOT_DISABLE_MERGE_TO = '1'
+  }
+
   if (task.enableSchedulerDebug) {
     env.BUILDKIT_SCHEDULER_DEBUG = '1'
   }
