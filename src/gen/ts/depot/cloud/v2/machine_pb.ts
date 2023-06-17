@@ -370,6 +370,11 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
    */
   disableMergeTo?: boolean
 
+  /**
+   * @generated from field: optional bool enable_gpu = 13;
+   */
+  enableGpu?: boolean
+
   constructor(data?: PartialMessage<RegisterMachineResponse_BuildKitTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -389,6 +394,7 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
     {no: 9, name: 'run_gc_before_start', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
     {no: 11, name: 'enable_scheduler_debug', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
     {no: 12, name: 'disable_merge_to', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
+    {no: 13, name: 'enable_gpu', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_BuildKitTask {

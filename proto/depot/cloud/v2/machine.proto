@@ -58,6 +58,7 @@ message RegisterMachineResponse {
     optional bool enable_scheduler_debug = 11;
     // Turns off merging feature of buildkit.  Attempting to help GDC.
     optional bool disable_merge_to = 12;
+    optional bool enable_gpu = 13;
   }
 
   // Specifies sending buildkit profiling data to a remote endpoint.

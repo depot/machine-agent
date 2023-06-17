@@ -36,6 +36,7 @@ enabled = true
 gc = true
 gckeepstorage = ${cacheSizeBytes}
 max-parallelism = 12
+gpu = ${task.enableGpu ? 'true' : 'false'}
 
 [worker.containerd]
 enabled = false
