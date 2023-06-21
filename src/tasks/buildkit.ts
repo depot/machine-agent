@@ -5,6 +5,8 @@ import {ensureMounted, mountExecutor} from '../utils/mounts'
 import {reportHealth, waitForBuildKitWorkers} from './health'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
+  console.log('Starting BuildKit')
+
   for (const mount of task.mounts) {
     await ensureMounted(mount.device, mount.path, mount.fsType)
   }
