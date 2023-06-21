@@ -8,6 +8,7 @@ export async function ensureMounted(
   path: string,
   fstype: RegisterMachineResponse_Mount_FilesystemType,
 ) {
+  console.log(`Ensuring ${device} is mounted at ${path}`)
   await waitForDevice(device)
   const realDevice = await fsp.realpath(device)
 
