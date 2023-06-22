@@ -1,5 +1,6 @@
 {
   "private": true,
+  "packageManager": "pnpm@8.6.3",
   "scripts": {
     "build": "./support/build.sh",
     "build:binaries": "pkg dist/index.js --no-bytecode --public --target node18-linux-x64,node18-linux-arm64 --output dist/machine-agent",
