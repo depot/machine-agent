@@ -8,7 +8,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
   console.log('Starting BuildKit')
 
   for (const mount of task.mounts) {
-    await ensureMounted(mount.device, mount.path, mount.fsType)
+    await ensureMounted(mount.device, mount.path, mount.fsType, mount.cephRbdMap)
   }
 
   await mountExecutor()

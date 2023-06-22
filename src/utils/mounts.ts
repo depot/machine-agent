@@ -1,14 +1,26 @@
 import {execa} from 'execa'
 import * as fsp from 'node:fs/promises'
-import {RegisterMachineResponse_Mount_FilesystemType} from '../gen/ts/depot/cloud/v2/machine_pb'
+import {
+  RegisterMachineResponse_Mount_CephRBDMap,
+  RegisterMachineResponse_Mount_FilesystemType,
+} from '../gen/ts/depot/cloud/v2/machine_pb'
+import {mapBlockDevice} from '../tasks/ceph'
 import {sleep} from './common'
 
 export async function ensureMounted(
   device: string,
   path: string,
   fstype: RegisterMachineResponse_Mount_FilesystemType,
+  cephRbdMap: RegisterMachineResponse_Mount_CephRBDMap | undefined,
 ) {
   console.log(`Ensuring ${device} is mounted at ${path}`)
+
+  if (cephRbdMap) {
+    console.log(`Mapping Ceph ${cephRbdMap.volumeName} for ${cephRbdMap.clientName}`)
+    // TODO: Overwrite and ignore the device passed in?
+    device = await mapBlockDevice(cephRbdMap.volumeName, cephRbdMap.clientName)
+  }
+
   await waitForDevice(device)
   const realDevice = await fsp.realpath(device)
 

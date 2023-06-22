@@ -1,6 +1,7 @@
 import {Code, ConnectError} from '@bufbuild/connect'
 import * as Sentry from '@sentry/node'
 import {startBuildKit} from './tasks/buildkit'
+import {setupCeph} from './tasks/ceph'
 import {assertNever, promises, sleep} from './utils/common'
 import {DEPOT_CLOUD_CONNECTION_ID, DEPOT_MACHINE_AGENT_VERSION} from './utils/env'
 import {client} from './utils/grpc'
@@ -40,7 +41,10 @@ async function runLoop() {
         case undefined:
           await sleep(1000)
           break
-
+        case 'cephConfig':
+          const {clientName, cephConf, key} = message.task.value
+          await setupCeph(clientName, cephConf, key)
+          break
         case 'buildkit':
           await startBuildKit(message, message.task.value)
           break
