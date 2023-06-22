@@ -12,6 +12,8 @@ const transport = createConnectTransport({
   httpVersion: '2',
   baseUrl: DEPOT_CLOUD_API_HOST,
   interceptors: [userAgentInterceptor],
+  pingIntervalMs: 1000 * 60, // 1 minute
+  idleConnectionTimeoutMs: 1000 * 60 * 10, // 10 minutes
 })
 
 export const client = createPromiseClient(MachineService, transport)
