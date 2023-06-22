@@ -25,7 +25,6 @@ message RegisterMachineResponse {
   oneof task {
     PendingTask pending = 3;
     BuildKitTask buildkit = 4;
-    CephConfigTask ceph_config = 5;
   }
 
   message Mount {
@@ -48,7 +47,19 @@ message RegisterMachineResponse {
   }
 
   // PendingTask represents an instruction to wait for a task to be assigned
-  message PendingTask {}
+  message PendingTask {
+    // rbd device map rbd/{volume_name}/{volume_name} --name {client_name} --keyring /etc/ceph/ceph.{client_name}.keyring
+    message CephConfig {
+      // Store securely. NOTE: this is not a keyring file but just a key.
+      string key = 1;
+      // Includes `client.` prefix
+      string client_name = 2;
+      // Store at /etc/ceph/ceph.conf
+      string ceph_conf = 3;
+    }
+    // Initialize the ceph configuration if present.
+    optional CephConfig ceph_config = 1;
+  }
 
   // BuildkitTask represents an instruction to start a buildkit daemon
   message BuildKitTask {
@@ -72,16 +83,6 @@ message RegisterMachineResponse {
     string endpoint = 1;
     string token = 2;
     string project_id = 3;
-  }
-
-  // rbd device map rbd/{volume_name}/{volume_name} --name {client_name} --keyring /etc/ceph/ceph.{client_name}.keyring
-  message CephConfigTask {
-    // Store securely. NOTE: this is not a keyring file but just a key.
-    string key = 1;
-    // Includes `client.` prefix
-    string client_name = 2;
-    // Store at /etc/ceph/ceph.conf
-    string ceph_conf = 3;
   }
 }
 

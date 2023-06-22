@@ -148,13 +148,6 @@ export class RegisterMachineResponse extends Message<RegisterMachineResponse> {
         value: RegisterMachineResponse_BuildKitTask
         case: 'buildkit'
       }
-    | {
-        /**
-         * @generated from field: depot.cloud.v2.RegisterMachineResponse.CephConfigTask ceph_config = 5;
-         */
-        value: RegisterMachineResponse_CephConfigTask
-        case: 'cephConfig'
-      }
     | {case: undefined; value?: undefined} = {case: undefined}
 
   constructor(data?: PartialMessage<RegisterMachineResponse>) {
@@ -169,7 +162,6 @@ export class RegisterMachineResponse extends Message<RegisterMachineResponse> {
     {no: 2, name: 'token', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 3, name: 'pending', kind: 'message', T: RegisterMachineResponse_PendingTask, oneof: 'task'},
     {no: 4, name: 'buildkit', kind: 'message', T: RegisterMachineResponse_BuildKitTask, oneof: 'task'},
-    {no: 5, name: 'ceph_config', kind: 'message', T: RegisterMachineResponse_CephConfigTask, oneof: 'task'},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse {
@@ -341,6 +333,13 @@ export class RegisterMachineResponse_Mount_CephRBDMap extends Message<RegisterMa
  * @generated from message depot.cloud.v2.RegisterMachineResponse.PendingTask
  */
 export class RegisterMachineResponse_PendingTask extends Message<RegisterMachineResponse_PendingTask> {
+  /**
+   * Initialize the ceph configuration if present.
+   *
+   * @generated from field: optional depot.cloud.v2.RegisterMachineResponse.PendingTask.CephConfig ceph_config = 1;
+   */
+  cephConfig?: RegisterMachineResponse_PendingTask_CephConfig
+
   constructor(data?: PartialMessage<RegisterMachineResponse_PendingTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -348,7 +347,9 @@ export class RegisterMachineResponse_PendingTask extends Message<RegisterMachine
 
   static readonly runtime: typeof proto3 = proto3
   static readonly typeName = 'depot.cloud.v2.RegisterMachineResponse.PendingTask'
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [])
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    {no: 1, name: 'ceph_config', kind: 'message', T: RegisterMachineResponse_PendingTask_CephConfig, opt: true},
+  ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_PendingTask {
     return new RegisterMachineResponse_PendingTask().fromBinary(bytes, options)
@@ -367,6 +368,81 @@ export class RegisterMachineResponse_PendingTask extends Message<RegisterMachine
     b: RegisterMachineResponse_PendingTask | PlainMessage<RegisterMachineResponse_PendingTask> | undefined,
   ): boolean {
     return proto3.util.equals(RegisterMachineResponse_PendingTask, a, b)
+  }
+}
+
+/**
+ * rbd device map rbd/{volume_name}/{volume_name} --name {client_name} --keyring /etc/ceph/ceph.{client_name}.keyring
+ *
+ * @generated from message depot.cloud.v2.RegisterMachineResponse.PendingTask.CephConfig
+ */
+export class RegisterMachineResponse_PendingTask_CephConfig extends Message<RegisterMachineResponse_PendingTask_CephConfig> {
+  /**
+   * Store securely. NOTE: this is not a keyring file but just a key.
+   *
+   * @generated from field: string key = 1;
+   */
+  key = ''
+
+  /**
+   * Includes `client.` prefix
+   *
+   * @generated from field: string client_name = 2;
+   */
+  clientName = ''
+
+  /**
+   * Store at /etc/ceph/ceph.conf
+   *
+   * @generated from field: string ceph_conf = 3;
+   */
+  cephConf = ''
+
+  constructor(data?: PartialMessage<RegisterMachineResponse_PendingTask_CephConfig>) {
+    super()
+    proto3.util.initPartial(data, this)
+  }
+
+  static readonly runtime: typeof proto3 = proto3
+  static readonly typeName = 'depot.cloud.v2.RegisterMachineResponse.PendingTask.CephConfig'
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    {no: 1, name: 'key', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+    {no: 2, name: 'client_name', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+    {no: 3, name: 'ceph_conf', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+  ])
+
+  static fromBinary(
+    bytes: Uint8Array,
+    options?: Partial<BinaryReadOptions>,
+  ): RegisterMachineResponse_PendingTask_CephConfig {
+    return new RegisterMachineResponse_PendingTask_CephConfig().fromBinary(bytes, options)
+  }
+
+  static fromJson(
+    jsonValue: JsonValue,
+    options?: Partial<JsonReadOptions>,
+  ): RegisterMachineResponse_PendingTask_CephConfig {
+    return new RegisterMachineResponse_PendingTask_CephConfig().fromJson(jsonValue, options)
+  }
+
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>,
+  ): RegisterMachineResponse_PendingTask_CephConfig {
+    return new RegisterMachineResponse_PendingTask_CephConfig().fromJsonString(jsonString, options)
+  }
+
+  static equals(
+    a:
+      | RegisterMachineResponse_PendingTask_CephConfig
+      | PlainMessage<RegisterMachineResponse_PendingTask_CephConfig>
+      | undefined,
+    b:
+      | RegisterMachineResponse_PendingTask_CephConfig
+      | PlainMessage<RegisterMachineResponse_PendingTask_CephConfig>
+      | undefined,
+  ): boolean {
+    return proto3.util.equals(RegisterMachineResponse_PendingTask_CephConfig, a, b)
   }
 }
 
@@ -525,69 +601,6 @@ export class RegisterMachineResponse_Profiler extends Message<RegisterMachineRes
     b: RegisterMachineResponse_Profiler | PlainMessage<RegisterMachineResponse_Profiler> | undefined,
   ): boolean {
     return proto3.util.equals(RegisterMachineResponse_Profiler, a, b)
-  }
-}
-
-/**
- * rbd device map rbd/{volume_name}/{volume_name} --name {client_name} --keyring /etc/ceph/ceph.{client_name}.keyring
- *
- * @generated from message depot.cloud.v2.RegisterMachineResponse.CephConfigTask
- */
-export class RegisterMachineResponse_CephConfigTask extends Message<RegisterMachineResponse_CephConfigTask> {
-  /**
-   * Store securely. NOTE: this is not a keyring file but just a key.
-   *
-   * @generated from field: string key = 1;
-   */
-  key = ''
-
-  /**
-   * Includes `client.` prefix
-   *
-   * @generated from field: string client_name = 2;
-   */
-  clientName = ''
-
-  /**
-   * Store at /etc/ceph/ceph.conf
-   *
-   * @generated from field: string ceph_conf = 3;
-   */
-  cephConf = ''
-
-  constructor(data?: PartialMessage<RegisterMachineResponse_CephConfigTask>) {
-    super()
-    proto3.util.initPartial(data, this)
-  }
-
-  static readonly runtime: typeof proto3 = proto3
-  static readonly typeName = 'depot.cloud.v2.RegisterMachineResponse.CephConfigTask'
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    {no: 1, name: 'key', kind: 'scalar', T: 9 /* ScalarType.STRING */},
-    {no: 2, name: 'client_name', kind: 'scalar', T: 9 /* ScalarType.STRING */},
-    {no: 3, name: 'ceph_conf', kind: 'scalar', T: 9 /* ScalarType.STRING */},
-  ])
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_CephConfigTask {
-    return new RegisterMachineResponse_CephConfigTask().fromBinary(bytes, options)
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RegisterMachineResponse_CephConfigTask {
-    return new RegisterMachineResponse_CephConfigTask().fromJson(jsonValue, options)
-  }
-
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): RegisterMachineResponse_CephConfigTask {
-    return new RegisterMachineResponse_CephConfigTask().fromJsonString(jsonString, options)
-  }
-
-  static equals(
-    a: RegisterMachineResponse_CephConfigTask | PlainMessage<RegisterMachineResponse_CephConfigTask> | undefined,
-    b: RegisterMachineResponse_CephConfigTask | PlainMessage<RegisterMachineResponse_CephConfigTask> | undefined,
-  ): boolean {
-    return proto3.util.equals(RegisterMachineResponse_CephConfigTask, a, b)
   }
 }
 

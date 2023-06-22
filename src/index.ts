@@ -38,12 +38,14 @@ async function runLoop() {
 
       switch (message.task?.case) {
         case 'pending':
-        case undefined:
+          if (message.task.value.cephConfig) {
+            const {clientName, cephConf, key} = message.task.value.cephConfig
+            await setupCeph(clientName, cephConf, key)
+          }
           await sleep(1000)
           break
-        case 'cephConfig':
-          const {clientName, cephConf, key} = message.task.value
-          await setupCeph(clientName, cephConf, key)
+        case undefined:
+          await sleep(1000)
           break
         case 'buildkit':
           await startBuildKit(message, message.task.value)
