@@ -14,10 +14,9 @@ export async function writeCephConf(clientName: string, cephConf: string, key: s
   await fsp.chmod(keyringPath, 0o600)
 }
 
-// Returns the device of the attached block device.
-export async function mapBlockDevice(volumeName: string, clientName: string): Promise<string> {
+// Connects to ceph cluster and maps the RBD to a block device locally.
+export async function mapBlockDevice(volumeName: string, clientName: string) {
   const imageSpec = `rbd/${volumeName}/${volumeName}`
   const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
-  const {stdout: device} = await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath])
-  return device
+  await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath], {stdio: 'inherit'})
 }
