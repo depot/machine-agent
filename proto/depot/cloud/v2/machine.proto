@@ -38,6 +38,20 @@ message RegisterMachineResponse {
       FILESYSTEM_TYPE_XFS = 2;
       FILESYSTEM_TYPE_BTRFS = 3;
     }
+
+    // rbd device map rbd/{volume_name}/{volume_name} --name {client_name} --keyring /etc/ceph/ceph.{client_name}.keyring
+    message CephVolume {
+      // Used as the namespace and image name.
+      string volume_name = 1;
+      // Includes `client.` prefix
+      string client_name = 2;
+      // Store securely. NOTE: this is not a keyring file but just a key.
+      string key = 3;
+      // Store at /etc/ceph/ceph.conf
+      string ceph_conf = 4;
+    }
+    // Initialize the ceph if present.
+    optional CephVolume ceph_volume = 4;
   }
 
   // PendingTask represents an instruction to wait for a task to be assigned

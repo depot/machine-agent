@@ -1,14 +1,23 @@
 import {execa} from 'execa'
 import * as fsp from 'node:fs/promises'
-import {RegisterMachineResponse_Mount_FilesystemType} from '../gen/ts/depot/cloud/v2/machine_pb'
+import {
+  RegisterMachineResponse_Mount_CephVolume,
+  RegisterMachineResponse_Mount_FilesystemType,
+} from '../gen/ts/depot/cloud/v2/machine_pb'
 import {sleep} from './common'
 
 export async function ensureMounted(
   device: string,
   path: string,
   fstype: RegisterMachineResponse_Mount_FilesystemType,
+  cephVolume: RegisterMachineResponse_Mount_CephVolume | undefined,
 ) {
   console.log(`Ensuring ${device} is mounted at ${path}`)
+
+  if (cephVolume) {
+    await attachCeph(cephVolume)
+  }
+
   await waitForDevice(device)
   const realDevice = await fsp.realpath(device)
 
@@ -33,6 +42,17 @@ export async function ensureMounted(
   console.log(`Mounting ${device} at ${path}`)
   await fsp.mkdir(path, {recursive: true})
   await mountDevice(realDevice, path, fstype)
+}
+
+async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume) {
+  const {volumeName, clientName, cephConf, key} = cephVolume
+  console.log(`Installing ceph configuration for ${clientName}`)
+  await writeCephConf(clientName, cephConf, key)
+
+  console.log(`Attaching ceph ${volumeName} for ${clientName}`)
+  // NOTE: The API sends the device name as `/dev/rbd/rbd/${volumeName}/${volumeName}`
+  // This means we ignore the device name returned from mapping.
+  await mapBlockDevice(volumeName, clientName)
 }
 
 async function mountDevice(device: string, path: string, fstype: RegisterMachineResponse_Mount_FilesystemType) {
@@ -77,4 +97,24 @@ async function waitForDevice(device: string) {
       if (err.code !== 'ENOENT') throw err
     }
   }
+}
+
+// Creates the ceph.conf and ceph.client.keyring files.
+export async function writeCephConf(clientName: string, cephConf: string, key: string) {
+  await fsp.mkdir('/etc/ceph', {recursive: true})
+  await fsp.chmod('/etc/ceph', 0o700)
+  await fsp.writeFile('/etc/ceph/ceph.conf', cephConf)
+
+  const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
+  const keyring = `[${clientName}]
+    key = ${key}`
+  await fsp.writeFile(keyringPath, keyring)
+  await fsp.chmod(keyringPath, 0o600)
+}
+
+// Connects to ceph cluster and maps the RBD to a block device locally.
+export async function mapBlockDevice(volumeName: string, clientName: string) {
+  const imageSpec = `rbd/${volumeName}/${volumeName}`
+  const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
+  await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath], {stdio: 'inherit'})
 }

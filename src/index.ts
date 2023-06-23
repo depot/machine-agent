@@ -40,7 +40,6 @@ async function runLoop() {
         case undefined:
           await sleep(1000)
           break
-
         case 'buildkit':
           await startBuildKit(message, message.task.value)
           break
