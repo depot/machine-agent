@@ -9,7 +9,8 @@ export async function writeCephConf(clientName: string, cephConf: string, key: s
 
   const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
   const keyring = `[${clientName}]
-    key = ${key}`
+    key = ${key}
+`
   await fsp.writeFile(keyringPath, keyring)
   await fsp.chmod(keyringPath, 0o600)
 }
