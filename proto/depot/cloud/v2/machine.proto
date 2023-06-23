@@ -39,27 +39,23 @@ message RegisterMachineResponse {
       FILESYSTEM_TYPE_BTRFS = 3;
     }
 
-    message CephRBDMap {
+    // rbd device map rbd/{volume_name}/{volume_name} --name {client_name} --keyring /etc/ceph/ceph.{client_name}.keyring
+    message CephVolume {
+      // Used as the namespace and image name.
       string volume_name = 1;
+      // Includes `client.` prefix
       string client_name = 2;
+      // Store securely. NOTE: this is not a keyring file but just a key.
+      string key = 3;
+      // Store at /etc/ceph/ceph.conf
+      string ceph_conf = 4;
     }
-    optional CephRBDMap ceph_rbd_map = 4;
+    // Initialize the ceph if present.
+    optional CephVolume ceph_volume = 4;
   }
 
   // PendingTask represents an instruction to wait for a task to be assigned
-  message PendingTask {
-    // rbd device map rbd/{volume_name}/{volume_name} --name {client_name} --keyring /etc/ceph/ceph.{client_name}.keyring
-    message CephConfig {
-      // Store securely. NOTE: this is not a keyring file but just a key.
-      string key = 1;
-      // Includes `client.` prefix
-      string client_name = 2;
-      // Store at /etc/ceph/ceph.conf
-      string ceph_conf = 3;
-    }
-    // Initialize the ceph configuration if present.
-    optional CephConfig ceph_config = 1;
-  }
+  message PendingTask {}
 
   // BuildkitTask represents an instruction to start a buildkit daemon
   message BuildKitTask {

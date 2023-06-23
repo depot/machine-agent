@@ -1,24 +1,22 @@
 import {execa} from 'execa'
 import * as fsp from 'node:fs/promises'
 import {
-  RegisterMachineResponse_Mount_CephRBDMap,
+  RegisterMachineResponse_Mount_CephVolume,
   RegisterMachineResponse_Mount_FilesystemType,
 } from '../gen/ts/depot/cloud/v2/machine_pb'
-import {mapBlockDevice} from '../tasks/ceph'
+import {mapBlockDevice, writeCephConf} from '../tasks/ceph'
 import {sleep} from './common'
 
 export async function ensureMounted(
   device: string,
   path: string,
   fstype: RegisterMachineResponse_Mount_FilesystemType,
-  cephRbdMap: RegisterMachineResponse_Mount_CephRBDMap | undefined,
+  cephVolume: RegisterMachineResponse_Mount_CephVolume | undefined,
 ) {
   console.log(`Ensuring ${device} is mounted at ${path}`)
 
-  if (cephRbdMap) {
-    console.log(`Mapping Ceph ${cephRbdMap.volumeName} for ${cephRbdMap.clientName}`)
-    // TODO: Overwrite and ignore the device passed in?
-    device = await mapBlockDevice(cephRbdMap.volumeName, cephRbdMap.clientName)
+  if (cephVolume) {
+    await attachCeph(cephVolume)
   }
 
   await waitForDevice(device)
@@ -45,6 +43,17 @@ export async function ensureMounted(
   console.log(`Mounting ${device} at ${path}`)
   await fsp.mkdir(path, {recursive: true})
   await mountDevice(realDevice, path, fstype)
+}
+
+async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume) {
+  const {volumeName, clientName, cephConf, key} = cephVolume
+  console.log(`Installing ceph configuration for ${clientName}`)
+  await writeCephConf(clientName, cephConf, key)
+
+  console.log(`Attaching ceph ${volumeName} for ${clientName}`)
+  // NOTE: The API sends the device name as `/dev/rbd/rbd/${volumeName}/${volumeName}`
+  // This means we ignore the device name returned from mapping.
+  await mapBlockDevice(volumeName, clientName)
 }
 
 async function mountDevice(device: string, path: string, fstype: RegisterMachineResponse_Mount_FilesystemType) {

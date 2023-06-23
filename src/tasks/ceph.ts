@@ -2,7 +2,7 @@ import {execa} from 'execa'
 import * as fsp from 'node:fs/promises'
 
 // Creates the ceph.conf and ceph.client.keyring files.
-export async function setupCeph(clientName: string, cephConf: string, key: string) {
+export async function writeCephConf(clientName: string, cephConf: string, key: string) {
   await fsp.mkdir('/etc/ceph', {recursive: true})
   await fsp.chmod('/etc/ceph', 0o700)
   await fsp.writeFile('/etc/ceph/ceph.conf', cephConf)

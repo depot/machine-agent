@@ -204,9 +204,11 @@ export class RegisterMachineResponse_Mount extends Message<RegisterMachineRespon
   fsType = RegisterMachineResponse_Mount_FilesystemType.UNSPECIFIED
 
   /**
-   * @generated from field: optional depot.cloud.v2.RegisterMachineResponse.Mount.CephRBDMap ceph_rbd_map = 4;
+   * Initialize the ceph if present.
+   *
+   * @generated from field: optional depot.cloud.v2.RegisterMachineResponse.Mount.CephVolume ceph_volume = 4;
    */
-  cephRbdMap?: RegisterMachineResponse_Mount_CephRBDMap
+  cephVolume?: RegisterMachineResponse_Mount_CephVolume
 
   constructor(data?: PartialMessage<RegisterMachineResponse_Mount>) {
     super()
@@ -219,7 +221,7 @@ export class RegisterMachineResponse_Mount extends Message<RegisterMachineRespon
     {no: 1, name: 'path', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 2, name: 'device', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 3, name: 'fs_type', kind: 'enum', T: proto3.getEnumType(RegisterMachineResponse_Mount_FilesystemType)},
-    {no: 4, name: 'ceph_rbd_map', kind: 'message', T: RegisterMachineResponse_Mount_CephRBDMap, opt: true},
+    {no: 4, name: 'ceph_volume', kind: 'message', T: RegisterMachineResponse_Mount_CephVolume, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_Mount {
@@ -279,51 +281,73 @@ proto3.util.setEnumType(
 )
 
 /**
- * @generated from message depot.cloud.v2.RegisterMachineResponse.Mount.CephRBDMap
+ * rbd device map rbd/{volume_name}/{volume_name} --name {client_name} --keyring /etc/ceph/ceph.{client_name}.keyring
+ *
+ * @generated from message depot.cloud.v2.RegisterMachineResponse.Mount.CephVolume
  */
-export class RegisterMachineResponse_Mount_CephRBDMap extends Message<RegisterMachineResponse_Mount_CephRBDMap> {
+export class RegisterMachineResponse_Mount_CephVolume extends Message<RegisterMachineResponse_Mount_CephVolume> {
   /**
+   * Used as the namespace and image name.
+   *
    * @generated from field: string volume_name = 1;
    */
   volumeName = ''
 
   /**
+   * Includes `client.` prefix
+   *
    * @generated from field: string client_name = 2;
    */
   clientName = ''
 
-  constructor(data?: PartialMessage<RegisterMachineResponse_Mount_CephRBDMap>) {
+  /**
+   * Store securely. NOTE: this is not a keyring file but just a key.
+   *
+   * @generated from field: string key = 3;
+   */
+  key = ''
+
+  /**
+   * Store at /etc/ceph/ceph.conf
+   *
+   * @generated from field: string ceph_conf = 4;
+   */
+  cephConf = ''
+
+  constructor(data?: PartialMessage<RegisterMachineResponse_Mount_CephVolume>) {
     super()
     proto3.util.initPartial(data, this)
   }
 
   static readonly runtime: typeof proto3 = proto3
-  static readonly typeName = 'depot.cloud.v2.RegisterMachineResponse.Mount.CephRBDMap'
+  static readonly typeName = 'depot.cloud.v2.RegisterMachineResponse.Mount.CephVolume'
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     {no: 1, name: 'volume_name', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 2, name: 'client_name', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+    {no: 3, name: 'key', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+    {no: 4, name: 'ceph_conf', kind: 'scalar', T: 9 /* ScalarType.STRING */},
   ])
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_Mount_CephRBDMap {
-    return new RegisterMachineResponse_Mount_CephRBDMap().fromBinary(bytes, options)
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_Mount_CephVolume {
+    return new RegisterMachineResponse_Mount_CephVolume().fromBinary(bytes, options)
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RegisterMachineResponse_Mount_CephRBDMap {
-    return new RegisterMachineResponse_Mount_CephRBDMap().fromJson(jsonValue, options)
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RegisterMachineResponse_Mount_CephVolume {
+    return new RegisterMachineResponse_Mount_CephVolume().fromJson(jsonValue, options)
   }
 
   static fromJsonString(
     jsonString: string,
     options?: Partial<JsonReadOptions>,
-  ): RegisterMachineResponse_Mount_CephRBDMap {
-    return new RegisterMachineResponse_Mount_CephRBDMap().fromJsonString(jsonString, options)
+  ): RegisterMachineResponse_Mount_CephVolume {
+    return new RegisterMachineResponse_Mount_CephVolume().fromJsonString(jsonString, options)
   }
 
   static equals(
-    a: RegisterMachineResponse_Mount_CephRBDMap | PlainMessage<RegisterMachineResponse_Mount_CephRBDMap> | undefined,
-    b: RegisterMachineResponse_Mount_CephRBDMap | PlainMessage<RegisterMachineResponse_Mount_CephRBDMap> | undefined,
+    a: RegisterMachineResponse_Mount_CephVolume | PlainMessage<RegisterMachineResponse_Mount_CephVolume> | undefined,
+    b: RegisterMachineResponse_Mount_CephVolume | PlainMessage<RegisterMachineResponse_Mount_CephVolume> | undefined,
   ): boolean {
-    return proto3.util.equals(RegisterMachineResponse_Mount_CephRBDMap, a, b)
+    return proto3.util.equals(RegisterMachineResponse_Mount_CephVolume, a, b)
   }
 }
 
@@ -333,13 +357,6 @@ export class RegisterMachineResponse_Mount_CephRBDMap extends Message<RegisterMa
  * @generated from message depot.cloud.v2.RegisterMachineResponse.PendingTask
  */
 export class RegisterMachineResponse_PendingTask extends Message<RegisterMachineResponse_PendingTask> {
-  /**
-   * Initialize the ceph configuration if present.
-   *
-   * @generated from field: optional depot.cloud.v2.RegisterMachineResponse.PendingTask.CephConfig ceph_config = 1;
-   */
-  cephConfig?: RegisterMachineResponse_PendingTask_CephConfig
-
   constructor(data?: PartialMessage<RegisterMachineResponse_PendingTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -347,9 +364,7 @@ export class RegisterMachineResponse_PendingTask extends Message<RegisterMachine
 
   static readonly runtime: typeof proto3 = proto3
   static readonly typeName = 'depot.cloud.v2.RegisterMachineResponse.PendingTask'
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    {no: 1, name: 'ceph_config', kind: 'message', T: RegisterMachineResponse_PendingTask_CephConfig, opt: true},
-  ])
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_PendingTask {
     return new RegisterMachineResponse_PendingTask().fromBinary(bytes, options)
@@ -368,81 +383,6 @@ export class RegisterMachineResponse_PendingTask extends Message<RegisterMachine
     b: RegisterMachineResponse_PendingTask | PlainMessage<RegisterMachineResponse_PendingTask> | undefined,
   ): boolean {
     return proto3.util.equals(RegisterMachineResponse_PendingTask, a, b)
-  }
-}
-
-/**
- * rbd device map rbd/{volume_name}/{volume_name} --name {client_name} --keyring /etc/ceph/ceph.{client_name}.keyring
- *
- * @generated from message depot.cloud.v2.RegisterMachineResponse.PendingTask.CephConfig
- */
-export class RegisterMachineResponse_PendingTask_CephConfig extends Message<RegisterMachineResponse_PendingTask_CephConfig> {
-  /**
-   * Store securely. NOTE: this is not a keyring file but just a key.
-   *
-   * @generated from field: string key = 1;
-   */
-  key = ''
-
-  /**
-   * Includes `client.` prefix
-   *
-   * @generated from field: string client_name = 2;
-   */
-  clientName = ''
-
-  /**
-   * Store at /etc/ceph/ceph.conf
-   *
-   * @generated from field: string ceph_conf = 3;
-   */
-  cephConf = ''
-
-  constructor(data?: PartialMessage<RegisterMachineResponse_PendingTask_CephConfig>) {
-    super()
-    proto3.util.initPartial(data, this)
-  }
-
-  static readonly runtime: typeof proto3 = proto3
-  static readonly typeName = 'depot.cloud.v2.RegisterMachineResponse.PendingTask.CephConfig'
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    {no: 1, name: 'key', kind: 'scalar', T: 9 /* ScalarType.STRING */},
-    {no: 2, name: 'client_name', kind: 'scalar', T: 9 /* ScalarType.STRING */},
-    {no: 3, name: 'ceph_conf', kind: 'scalar', T: 9 /* ScalarType.STRING */},
-  ])
-
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): RegisterMachineResponse_PendingTask_CephConfig {
-    return new RegisterMachineResponse_PendingTask_CephConfig().fromBinary(bytes, options)
-  }
-
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): RegisterMachineResponse_PendingTask_CephConfig {
-    return new RegisterMachineResponse_PendingTask_CephConfig().fromJson(jsonValue, options)
-  }
-
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): RegisterMachineResponse_PendingTask_CephConfig {
-    return new RegisterMachineResponse_PendingTask_CephConfig().fromJsonString(jsonString, options)
-  }
-
-  static equals(
-    a:
-      | RegisterMachineResponse_PendingTask_CephConfig
-      | PlainMessage<RegisterMachineResponse_PendingTask_CephConfig>
-      | undefined,
-    b:
-      | RegisterMachineResponse_PendingTask_CephConfig
-      | PlainMessage<RegisterMachineResponse_PendingTask_CephConfig>
-      | undefined,
-  ): boolean {
-    return proto3.util.equals(RegisterMachineResponse_PendingTask_CephConfig, a, b)
   }
 }
 
