@@ -73,6 +73,16 @@ async function mountDevice(device: string, path: string, fstype: RegisterMachine
   throw new Error(`Failed to mount ${device} at ${path}`)
 }
 
+// Unmounts device at path.  If the device is not mounted, this is a no-op.
+export async function unmountDevice(path: string) {
+  const {exitCode, stderr} = await execa('umount', [path], {reject: false, stdio: 'inherit'})
+  if (exitCode === 0 || exitCode === 32) {
+    return
+  }
+
+  throw new Error(`Failed to unmount ${path}: ${stderr}`)
+}
+
 // Bind-mounts the BuildKit executor directory to the ephemeral disk.
 export async function mountExecutor() {
   const mounts = await fsp.readFile('/proc/mounts', 'utf8')
@@ -117,4 +127,15 @@ export async function mapBlockDevice(volumeName: string, clientName: string) {
   const imageSpec = `rbd/${volumeName}/${volumeName}`
   const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
   await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath], {stdio: 'inherit'})
+}
+
+export async function unmapBlockDevice(volumeName: string) {
+  const imageSpec = `rbd/${volumeName}/${volumeName}`
+  const {exitCode, stderr} = await execa('rbd', ['unmap', imageSpec], {reject: false, stdio: 'inherit'})
+  // 22 means that the device is not mapped a.k.a EINVAL.
+  if (exitCode === 0 || exitCode === 22) {
+    return
+  }
+
+  throw new Error(`Failed to unmap ${imageSpec}: ${stderr}`)
 }
