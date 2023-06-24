@@ -7,11 +7,15 @@ import {reportHealth, waitForBuildKitWorkers} from './health'
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   console.log('Starting BuildKit')
 
+  let useCeph = false
   for (const mount of task.mounts) {
     await ensureMounted(mount.device, mount.path, mount.fsType, mount.cephVolume)
+    if (mount.cephVolume) useCeph = true
   }
 
-  await mountExecutor()
+  if (!useCeph) {
+    await mountExecutor()
+  }
 
   const {machineId, token} = message
   const headers = {Authorization: `Bearer ${token}`}
