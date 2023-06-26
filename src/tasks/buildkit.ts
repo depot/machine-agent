@@ -1,7 +1,7 @@
 import {execa} from 'execa'
 import * as fsp from 'fs/promises'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v2/machine_pb'
-import {ensureMounted, mountExecutor} from '../utils/mounts'
+import {ensureMounted, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
 import {reportHealth, waitForBuildKitWorkers} from './health'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
@@ -128,6 +128,13 @@ keepBytes = ${cacheSizeBytes}
       }
     } finally {
       controller.abort()
+
+      for (const mount of task.mounts) {
+        await unmountDevice(mount.device)
+        if (mount.cephVolume) {
+          await unmapBlockDevice(mount.cephVolume.volumeName)
+        }
+      }
     }
   }
 
