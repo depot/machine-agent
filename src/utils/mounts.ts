@@ -139,3 +139,7 @@ export async function unmapBlockDevice(volumeName: string) {
 
   throw new Error(`Failed to unmap ${imageSpec}: ${stderr}`)
 }
+
+export async function fstrim(path: string) {
+  await execa('fstrim', ['-v', path], {stdio: 'inherit'})
+}
