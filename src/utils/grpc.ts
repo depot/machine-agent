@@ -1,6 +1,6 @@
 import {createPromiseClient, Interceptor} from '@bufbuild/connect'
 import {createConnectTransport} from '@bufbuild/connect-node'
-import {MachineService} from '../gen/ts/depot/cloud/v2/machine_connect'
+import {MachineService} from '../gen/ts/depot/cloud/v3/machine_connect'
 import {DEPOT_CLOUD_API_HOST, DEPOT_MACHINE_AGENT_VERSION} from './env'
 
 const userAgentInterceptor: Interceptor = (next) => async (req) => {

@@ -1,6 +1,6 @@
 import {PlainMessage} from '@bufbuild/protobuf'
 import {execa} from 'execa'
-import {DiskSpace} from '../gen/ts/depot/cloud/v2/machine_pb'
+import {DiskSpace} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {sleep} from '../utils/common'
 import {DiskStats, stats} from '../utils/disk'
 import {client} from '../utils/grpc'
@@ -19,32 +19,6 @@ export interface Mount {
 }
 
 export async function reportHealth({buildkitStatus, machineId, signal, headers, mounts}: ReportHealthParams) {
-  async function* pingHealth() {
-    while (true) {
-      if (signal.aborted) return
-      await sleep(1000)
-
-      const disk_stats = await Promise.all(mounts.map(({device, path}) => stats(device, path)))
-
-      const disks: PlainMessage<DiskSpace>[] = disk_stats
-        .filter((item: DiskStats | undefined): item is DiskStats => {
-          return item !== undefined
-        })
-        .map(({device, path, freeMb, totalMb, freeInodes, totalInodes}) => {
-          return {
-            device,
-            path,
-            freeMb,
-            totalMb,
-            freeInodes,
-            totalInodes,
-          }
-        })
-
-      yield {machineId, disks}
-    }
-  }
-
   while (true) {
     if (signal.aborted) return
 
@@ -57,7 +31,28 @@ export async function reportHealth({buildkitStatus, machineId, signal, headers, 
     await waitForBuildKitWorkers(signal)
 
     try {
-      await client.pingMachineHealth(pingHealth(), {headers, signal})
+      while (true) {
+        if (signal.aborted) return
+
+        const disk_stats = await Promise.all(mounts.map(({device, path}) => stats(device, path)))
+        const disks: PlainMessage<DiskSpace>[] = disk_stats
+          .filter((item: DiskStats | undefined): item is DiskStats => {
+            return item !== undefined
+          })
+          .map(({device, path, freeMb, totalMb, freeInodes, totalInodes}) => {
+            return {
+              device,
+              path,
+              freeMb,
+              totalMb,
+              freeInodes,
+              totalInodes,
+            }
+          })
+
+        await client.pingMachineHealth({machineId, disks}, {headers, signal})
+        await sleep(1000)
+      }
     } catch (error) {
       console.log('Error reporting health:', error)
     }
