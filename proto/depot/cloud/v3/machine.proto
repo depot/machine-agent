@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package depot.cloud.v2;
+package depot.cloud.v3;
 
 service MachineService {
   rpc RegisterMachine(RegisterMachineRequest) returns (stream RegisterMachineResponse);
-  rpc PingMachineHealth(stream PingMachineHealthRequest) returns (PingMachineHealthResponse);
+  rpc PingMachineHealth(PingMachineHealthRequest) returns (PingMachineHealthResponse);
 }
 
 message RegisterMachineRequest {

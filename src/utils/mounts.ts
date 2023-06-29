@@ -3,7 +3,7 @@ import * as fsp from 'node:fs/promises'
 import {
   RegisterMachineResponse_Mount_CephVolume,
   RegisterMachineResponse_Mount_FilesystemType,
-} from '../gen/ts/depot/cloud/v2/machine_pb'
+} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {sleep} from './common'
 
 export async function ensureMounted(
