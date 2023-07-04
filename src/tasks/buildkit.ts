@@ -46,17 +46,18 @@ max-parallelism = 12
 [worker.containerd]
 enabled = false
 
-[[worker.oci.gcpolicy]]
-keepBytes = 10240000000 # 10 GB
-keepDuration = 604800 # 7 days: 3600 * 24 * 7
-filters = [
-  "type==source.local",
-  "type==exec.cachemount",
-  "type==source.git.checkout",
-]
+# [[worker.oci.gcpolicy]]
+# keepBytes = 10240000000 # 10 GB
+# keepDuration = 604800 # 7 days: 3600 * 24 * 7
+# filters = [
+#   "type==source.local",
+#   "type==exec.cachemount",
+#   "type==source.git.checkout",
+# ]
 
 [[worker.oci.gcpolicy]]
-keepBytes = ${cacheSizeBytes}
+all = true
+keepDuration = 1209600 # 14 days: 3600 * 24 * 14
 
 [[worker.oci.gcpolicy]]
 all = true
