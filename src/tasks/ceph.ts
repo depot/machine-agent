@@ -46,8 +46,8 @@ export async function trimLoop({buildkitStatus, signal, mounts}: TrimParams) {
     }
   }
 
-  // Trim every 5 minutes
-  const TRIM_INTERVAL = 5 * 60 * 1000
+  // Trim every 2 minutes
+  const TRIM_INTERVAL = 2 * 60 * 1000
   let nextRunTime = Date.now() + TRIM_INTERVAL
   while (true) {
     if (signal.aborted) return
