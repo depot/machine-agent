@@ -145,25 +145,24 @@ export async function unmapBlockDevice(volumeName: string) {
   throw new Error(`Failed to unmap ${imageSpec}: ${stderr}`)
 }
 
+let isTrimInProgress = false
 // Trims the filesystem on the device.  This seems as if it removes
 // data from the block, but the provisioned du metrics stay the same.
 // We ignore any failures and just log them.
 export async function fstrim(path: string) {
+  if (isTrimInProgress) return
+  isTrimInProgress = true
+
   console.log(`Trimming ${path}`)
 
-  const startTime = new Date()
-  {
-    const {exitCode, stderr} = await execa('fstrim', ['-v', path], {
-      reject: false,
-      stdio: 'inherit',
-    })
-    if (exitCode !== 0) {
-      console.log(`Failed to trim ${path}: ${stderr}`)
-      return
-    }
+  try {
+    const startTime = Date.now()
+    await execa('fstrim', ['-v', path], {stdio: 'inherit'})
+    const executionTime = Date.now() - startTime
+    console.log(`Trimmed ${path} in ${executionTime} ms`)
+  } catch (err: any) {
+    console.log(`Failed to trim ${path}: ${err.stderr}`)
+  } finally {
+    isTrimInProgress = false
   }
-  const endTime = new Date()
-  const executionTime = endTime.getTime() - startTime.getTime()
-
-  console.log(`Trimmed ${path} in ${executionTime} ms`)
 }
