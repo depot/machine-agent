@@ -2,6 +2,7 @@ import {execa} from 'execa'
 import * as fsp from 'fs/promises'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
+import {trimLoop} from './ceph'
 import {reportHealth, waitForBuildKitWorkers} from './health'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
@@ -143,7 +144,11 @@ keepBytes = ${cacheSizeBytes}
   }
 
   try {
-    await Promise.all([runBuildKit(), reportHealth({buildkitStatus, machineId, signal, headers, mounts: task.mounts})])
+    await Promise.all([
+      runBuildKit(),
+      reportHealth({buildkitStatus, machineId, signal, headers, mounts: task.mounts}),
+      trimLoop({buildkitStatus, signal, mounts: task.mounts.filter((m) => m.cephVolume)}),
+    ])
   } catch (error) {
     throw error
   } finally {
