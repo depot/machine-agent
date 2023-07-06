@@ -54,10 +54,20 @@ async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume) 
   console.log(`Installing ceph configuration for ${clientName}`)
   await writeCephConf(clientName, cephConf, key)
 
+  try {
+    await fsp.stat('/dev/rbd0')
+    console.log(`RBD device already exists`)
+    return
+  } catch {}
+
   console.log(`Attaching ceph ${volumeName} for ${clientName}`)
+
   // NOTE: The API sends the device name as `/dev/rbd/rbd/${volumeName}/${volumeName}`
   // This means we ignore the device name returned from mapping.
-  await mapBlockDevice(volumeName, clientName)
+
+  const imageSpec = `rbd/${volumeName}/${volumeName}`
+  const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
+  await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath], {stdio: 'inherit'})
 }
 
 async function mountDevice(device: string, path: string, fstype: RegisterMachineResponse_Mount_FilesystemType) {
@@ -115,7 +125,7 @@ async function waitForDevice(device: string) {
 }
 
 // Creates the ceph.conf and ceph.client.keyring files.
-export async function writeCephConf(clientName: string, cephConf: string, key: string) {
+async function writeCephConf(clientName: string, cephConf: string, key: string) {
   await fsp.mkdir('/etc/ceph', {recursive: true})
   await fsp.chmod('/etc/ceph', 0o700)
   await fsp.writeFile('/etc/ceph/ceph.conf', cephConf)
@@ -125,13 +135,6 @@ export async function writeCephConf(clientName: string, cephConf: string, key: s
     key = ${key}`
   await fsp.writeFile(keyringPath, keyring)
   await fsp.chmod(keyringPath, 0o600)
-}
-
-// Connects to ceph cluster and maps the RBD to a block device locally.
-export async function mapBlockDevice(volumeName: string, clientName: string) {
-  const imageSpec = `rbd/${volumeName}/${volumeName}`
-  const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
-  await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath], {stdio: 'inherit'})
 }
 
 export async function unmapBlockDevice(volumeName: string) {
