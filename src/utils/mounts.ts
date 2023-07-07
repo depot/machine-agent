@@ -31,12 +31,9 @@ export async function ensureMounted(
   if (res.stdout === '') {
     console.log(`Device ${device} is not formatted`)
     if (fstype === RegisterMachineResponse_Mount_FilesystemType.XFS) {
-      if (cephVolume) {
-        // -K skips discarding blocks at mkfs time.  No need as this is a new volume.
-        await execa('mkfs', ['-t', 'xfs', '-K', realDevice], {stdio: 'inherit'})
-      } else {
-        await execa('mkfs', ['-t', 'xfs', realDevice], {stdio: 'inherit'})
-      }
+      // -K skips discarding blocks at mkfs time.  No need as this is a new volume.
+      // -m reflink=0 disables reflink. This greatly improves BuildKit export performance
+      await execa('mkfs', ['-t', 'xfs', '-K', '-m', 'reflink=0', realDevice], {stdio: 'inherit'})
     } else if (fstype === RegisterMachineResponse_Mount_FilesystemType.BTRFS) {
       await execa('mkfs', ['-t', 'btrfs', realDevice], {stdio: 'inherit'})
     } else {
