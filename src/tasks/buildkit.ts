@@ -43,6 +43,7 @@ enabled = true
 gc = true
 gckeepstorage = ${cacheSizeBytes}
 max-parallelism = 12
+snapshotter = "stargz"
 
 [worker.containerd]
 enabled = false
