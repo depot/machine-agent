@@ -20,7 +20,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
 
   // Attempt to delete old snapshotter data
   try {
-    execa('rm', ['-rf', 'rm', '/var/lib/buildkit/runc-overlayfs'], {stdio: 'inherit'}).catch((err) => {
+    execa('rm', ['-rf', '/var/lib/buildkit/runc-overlayfs'], {stdio: 'inherit'}).catch((err) => {
       console.error(err)
     })
   } catch {}
@@ -51,6 +51,11 @@ gc = true
 gckeepstorage = ${cacheSizeBytes}
 max-parallelism = 12
 snapshotter = "stargz"
+
+[worker.oci.stargzSnapshotter]
+no_background_fetch = true
+noprefetch = true
+no_prometheus = true
 
 [worker.containerd]
 enabled = false
@@ -138,6 +143,11 @@ keepBytes = ${cacheSizeBytes}
       }
     } finally {
       controller.abort()
+
+      // Remove estargz cache because we will rely on the buildkit layer cache instead.
+      await execa('rm', ['-rf', '/var/lib/buildkit/runc-stargz/snapshots/stargz'], {stdio: 'inherit'}).catch((err) => {
+        console.error(err)
+      })
 
       for (const mount of task.mounts) {
         if (mount.cephVolume) {
