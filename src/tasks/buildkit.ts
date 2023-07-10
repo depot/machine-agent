@@ -18,6 +18,11 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
     await mountExecutor()
   }
 
+  // Attempt to delete old snapshotter data
+  try {
+    await execa('rm', ['-rf', 'rm', '/var/lib/buildkit/runc-overlayfs'], {stdio: 'inherit'})
+  } catch {}
+
   const {machineId, token} = message
   const headers = {Authorization: `Bearer ${token}`}
 
