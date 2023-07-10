@@ -20,7 +20,9 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
 
   // Attempt to delete old snapshotter data
   try {
-    await execa('rm', ['-rf', 'rm', '/var/lib/buildkit/runc-overlayfs'], {stdio: 'inherit'})
+    execa('rm', ['-rf', 'rm', '/var/lib/buildkit/runc-overlayfs'], {stdio: 'inherit'}).catch((err) => {
+      console.error(err)
+    })
   } catch {}
 
   const {machineId, token} = message
