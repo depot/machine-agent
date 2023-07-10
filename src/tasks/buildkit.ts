@@ -52,6 +52,11 @@ gckeepstorage = ${cacheSizeBytes}
 max-parallelism = 12
 snapshotter = "stargz"
 
+[worker.oci.stargzSnapshotter]
+no_background_fetch = true
+noprefetch = true
+no_prometheus = true
+
 [worker.containerd]
 enabled = false
 
