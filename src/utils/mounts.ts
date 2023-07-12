@@ -37,7 +37,7 @@ export async function ensureMounted(
     } else if (fstype === RegisterMachineResponse_Mount_FilesystemType.BTRFS) {
       await execa('mkfs', ['-t', 'btrfs', realDevice], {stdio: 'inherit'})
     } else {
-      await execa('mkfs', ['-t', 'ext4', '-m0', '-Enodiscard,lazy_itable_init=1,lazy_journal_init=1', realDevice], {
+      await execa('mkfs.ext4', ['-m0', '-Enodiscard,lazy_itable_init=1,lazy_journal_init=1', realDevice], {
         stdio: 'inherit',
       })
     }
