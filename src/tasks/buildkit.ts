@@ -113,28 +113,25 @@ keepBytes = ${cacheSizeBytes}
     env.BUILDKIT_SCHEDULER_DEBUG = '1'
   }
 
-  const buildkitStatus = {ready: false}
-
   async function runBuildKit() {
     try {
-      const buildkit = execa('/usr/bin/buildkitd', [], {stdio: 'inherit', signal, env})
-      try {
-        if (task.runGcBeforeStart) {
-          await waitForBuildKitWorkers(signal)
-          await execa('/usr/bin/buildctl', ['prune', '--keep-storage', (task.cacheSize * 1024).toString()], {
-            stdio: 'inherit',
-            signal,
-            env,
-          })
-        }
-      } catch (error) {
-        // ignore errors attempting to GC
-        console.error('Unable to run GC', error)
-      } finally {
-        buildkitStatus.ready = true
+      if (task.runGcBeforeStart) {
+        setTimeout(async () => {
+          try {
+            await waitForBuildKitWorkers(signal)
+            await execa('/usr/bin/buildctl', ['prune', '--keep-storage', (task.cacheSize * 1024).toString()], {
+              stdio: 'inherit',
+              signal,
+              env,
+            })
+          } catch (error) {
+            // ignore errors attempting to GC
+            console.error('Unable to run GC', error)
+          }
+        }, 0)
       }
 
-      await buildkit
+      await execa('/usr/bin/buildkitd', [], {stdio: 'inherit', signal, env})
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
         // Ignore this error, it's expected when the process is killed.
@@ -164,8 +161,8 @@ keepBytes = ${cacheSizeBytes}
   try {
     await Promise.all([
       runBuildKit(),
-      reportHealth({buildkitStatus, machineId, signal, headers, mounts: task.mounts}),
-      trimLoop({buildkitStatus, signal, mounts: task.mounts.filter((m) => m.cephVolume)}),
+      reportHealth({machineId, signal, headers, mounts: task.mounts}),
+      trimLoop({signal, mounts: task.mounts.filter((m) => m.cephVolume)}),
     ])
   } catch (error) {
     throw error

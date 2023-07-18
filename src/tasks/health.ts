@@ -6,7 +6,6 @@ import {DiskStats, stats} from '../utils/disk'
 import {client} from '../utils/grpc'
 
 export interface ReportHealthParams {
-  buildkitStatus: {ready: boolean}
   machineId: string
   signal: AbortSignal
   headers: HeadersInit
@@ -18,15 +17,9 @@ export interface Mount {
   path: string
 }
 
-export async function reportHealth({buildkitStatus, machineId, signal, headers, mounts}: ReportHealthParams) {
+export async function reportHealth({machineId, signal, headers, mounts}: ReportHealthParams) {
   while (true) {
     if (signal.aborted) return
-
-    // Wait for ready signal
-    if (!buildkitStatus.ready && !signal.aborted) {
-      await sleep(100)
-      continue
-    }
 
     await waitForBuildKitWorkers(signal)
 
