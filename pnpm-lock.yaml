@@ -17,9 +17,15 @@ dependencies:
   '@sentry/node':
     specifier: ^7.56.0
     version: 7.56.0
+  abort-controller-x:
+    specifier: ^0.4.3
+    version: 0.4.3
   execa:
     specifier: ^7.1.1
     version: 7.1.1
+  node-graceful-shutdown:
+    specifier: ^1.1.5
+    version: 1.1.5
   undici:
     specifier: ^5.22.1
     version: 5.22.1
@@ -481,6 +487,10 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /abort-controller-x@0.4.3:
+    resolution: {integrity: sha512-VtUwTNU8fpMwvWGn4xE93ywbogTYsuT+AUxAXOeelbXuQVIwNmC5YLeho9sH4vZ4ITW8414TTAOG1nW6uIVHCA==}
+    dev: false
 
   /agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
@@ -985,6 +995,11 @@ packages:
     dependencies:
       whatwg-url: 5.0.0
     dev: true
+
+  /node-graceful-shutdown@1.1.5:
+    resolution: {integrity: sha512-tlz8XpPr+pqrEGWFNLtMwd0HdFsCAKp5NCmMvwcTZTA0hyrVd7gkKbivDcSM5uYB1331/cEjNTtmVtqKy8OSBw==}
+    engines: {node: '>=6'}
+    dev: false
 
   /npm-run-path@5.1.0:
     resolution: {integrity: sha512-sJOdmRGrY2sjNTRMbSvluQqg+8X7ZK61yvzBEIDhz4f8z1TZFYABsqjjCBd/0PUNE9M6QDgHJXQkGUEm7Q+l9Q==}

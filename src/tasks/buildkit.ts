@@ -1,9 +1,10 @@
+import {isAbortError} from 'abort-controller-x'
 import {execa} from 'execa'
 import * as fsp from 'fs/promises'
+import {onShutdown} from 'node-graceful-shutdown'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
-import {trimLoop} from './ceph'
-import {reportHealth, waitForBuildKitWorkers} from './health'
+import {reportHealth} from './health'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   console.log('Starting BuildKit')
@@ -115,55 +116,48 @@ keepBytes = ${cacheSizeBytes}
 
   async function runBuildKit() {
     try {
-      if (task.runGcBeforeStart) {
-        setTimeout(async () => {
-          try {
-            await waitForBuildKitWorkers(signal)
-            await execa('/usr/bin/buildctl', ['prune', '--keep-storage', (task.cacheSize * 1024).toString()], {
-              stdio: 'inherit',
-              signal,
-              env,
-            })
-          } catch (error) {
-            // ignore errors attempting to GC
-            console.error('Unable to run GC', error)
-          }
-        }, 0)
-      }
-
       await execa('/usr/bin/buildkitd', [], {stdio: 'inherit', signal, env})
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
+        // Ignore this error, it's expected when the process is killed.
+      } else if (isAbortError(error)) {
         // Ignore this error, it's expected when the process is killed.
       } else {
         throw error
       }
     } finally {
       controller.abort()
-
-      // Remove estargz cache because we will rely on the buildkit layer cache instead.
-      await execa('rm', ['-rf', '/var/lib/buildkit/runc-stargz/snapshots/stargz'], {stdio: 'inherit'}).catch((err) => {
-        console.error(err)
-      })
-
-      for (const mount of task.mounts) {
-        if (mount.cephVolume) {
-          await fstrim(mount.path)
-          await unmountDevice(mount.device)
-          await unmapBlockDevice(mount.cephVolume.volumeName)
-        } else {
-          await unmountDevice(mount.device)
-        }
-      }
     }
   }
 
+  const buildkit = runBuildKit()
+
+  onShutdown(async () => {
+    controller.abort()
+    try {
+      await buildkit
+    } catch (error) {
+      console.log(`BuildKit exited with error: ${error}`)
+    }
+
+    // Remove estargz cache because we will rely on the buildkit layer cache instead.
+    await execa('rm', ['-rf', '/var/lib/buildkit/runc-stargz/snapshots/stargz'], {stdio: 'inherit'}).catch((err) => {
+      console.error(err)
+    })
+
+    for (const mount of task.mounts) {
+      if (mount.cephVolume) {
+        await fstrim(mount.path)
+        await unmountDevice(mount.device)
+        await unmapBlockDevice(mount.cephVolume.volumeName)
+      } else {
+        await unmountDevice(mount.device)
+      }
+    }
+  })
+
   try {
-    await Promise.all([
-      runBuildKit(),
-      reportHealth({machineId, signal, headers, mounts: task.mounts}),
-      trimLoop({signal, mounts: task.mounts.filter((m) => m.cephVolume)}),
-    ])
+    await Promise.all([buildkit, reportHealth({machineId, signal, headers, mounts: task.mounts})])
   } catch (error) {
     throw error
   } finally {
