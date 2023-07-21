@@ -133,6 +133,11 @@ keepBytes = ${cacheSizeBytes}
   const buildkit = runBuildKit()
 
   onShutdown(async () => {
+    setTimeout(() => {
+      console.log('Shutdown timed out, killing process')
+      process.exit(1)
+    }, 1000 * 60).unref()
+
     controller.abort()
     try {
       await buildkit
