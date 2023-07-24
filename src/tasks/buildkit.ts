@@ -34,6 +34,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
   await fsp.writeFile('/etc/buildkit/tlsca.crt', task.caCert!.cert, {mode: 0o644})
 
   const cacheSizeBytes = task.cacheSize * 1000000000
+  const maxParallelism = task.maxParallelism > 0 ? task.maxParallelism : 12
 
   const config = `
 root = "/var/lib/buildkit"
@@ -50,7 +51,7 @@ ca = "/etc/buildkit/tlsca.crt"
 enabled = true
 gc = true
 gckeepstorage = ${cacheSizeBytes}
-max-parallelism = 12
+max-parallelism = ${maxParallelism}
 snapshotter = "stargz"
 
 [worker.oci.stargzSnapshotter]
