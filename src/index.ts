@@ -16,9 +16,11 @@ async function main() {
     return
   }
 
-  while (true) {
+  let done = false
+  while (!done) {
     try {
       await runLoop()
+      done = true
     } catch (err) {
       Sentry.captureException(err)
       console.log(err)
