@@ -5,6 +5,7 @@ import {onShutdown} from 'node-graceful-shutdown'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
 import {reportHealth} from './health'
+import {reportUsage} from './usage'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   console.log('Starting BuildKit')
@@ -163,7 +164,11 @@ keepBytes = ${cacheSizeBytes}
   })
 
   try {
-    await Promise.all([buildkit, reportHealth({machineId, signal, headers, mounts: task.mounts})])
+    await Promise.all([
+      buildkit,
+      reportHealth({machineId, signal, headers, mounts: task.mounts}),
+      reportUsage({machineId, signal, headers}),
+    ])
   } catch (error) {
     throw error
   } finally {

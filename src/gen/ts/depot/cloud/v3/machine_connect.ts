@@ -9,6 +9,8 @@ import {
   PingMachineHealthResponse,
   RegisterMachineRequest,
   RegisterMachineResponse,
+  UsageRequest,
+  UsageResponse,
 } from './machine_pb'
 
 /**
@@ -33,6 +35,15 @@ export const MachineService = {
       name: 'PingMachineHealth',
       I: PingMachineHealthRequest,
       O: PingMachineHealthResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc depot.cloud.v3.MachineService.Usage
+     */
+    usage: {
+      name: 'Usage',
+      I: UsageRequest,
+      O: UsageResponse,
       kind: MethodKind.Unary,
     },
   },

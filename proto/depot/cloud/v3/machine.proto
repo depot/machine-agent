@@ -5,6 +5,7 @@ package depot.cloud.v3;
 service MachineService {
   rpc RegisterMachine(RegisterMachineRequest) returns (stream RegisterMachineResponse);
   rpc PingMachineHealth(PingMachineHealthRequest) returns (PingMachineHealthResponse);
+  rpc Usage(UsageRequest) returns (UsageResponse);
 }
 
 message RegisterMachineRequest {
@@ -105,3 +106,15 @@ message Cert {
   string cert = 1;
   string key = 2;
 }
+
+message UsageRequest {
+  string machine_id = 1;
+  Cache cache = 2;
+}
+
+message Cache {
+  // Response is the output of the `buildkit du` command.
+  string buildkit_du_json = 1;
+}
+
+message UsageResponse {}
