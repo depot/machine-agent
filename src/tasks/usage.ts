@@ -15,25 +15,28 @@ export interface Mount {
 }
 
 export async function reportUsage({machineId, signal, headers}: ReportUsageParams) {
+  // Report every minute
+  const REPORT_INTERVAL = 60 * 1000
+
+  await waitForHealthy(signal)
+
+  let nextRunTime = Date.now() + REPORT_INTERVAL
   while (true) {
     if (signal.aborted) return
 
-    await waitForHealthy(signal)
+    await sleep(1000)
+    if (Date.now() < nextRunTime) continue
 
     try {
-      while (true) {
-        if (signal.aborted) return
-
-        const buildkitDuJson = await du()
-        if (buildkitDuJson) {
-          await client.usage({machineId, cache: {buildkitDuJson}}, {headers, signal})
-        }
-        await sleep(60 * 1000)
+      const buildkitDuJson = await du()
+      if (buildkitDuJson) {
+        await client.usage({machineId, cache: {buildkitDuJson}}, {headers, signal})
       }
     } catch (error) {
       console.log('Error reporting usage:', error)
     }
-    await sleep(1000)
+
+    nextRunTime = Date.now() + REPORT_INTERVAL
   }
 }
 
