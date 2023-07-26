@@ -748,3 +748,121 @@ export class Cert extends Message<Cert> {
     return proto3.util.equals(Cert, a, b)
   }
 }
+
+/**
+ * @generated from message depot.cloud.v3.UsageRequest
+ */
+export class UsageRequest extends Message<UsageRequest> {
+  /**
+   * @generated from field: string machine_id = 1;
+   */
+  machineId = ''
+
+  /**
+   * @generated from field: depot.cloud.v3.Cache cache = 2;
+   */
+  cache?: Cache
+
+  constructor(data?: PartialMessage<UsageRequest>) {
+    super()
+    proto3.util.initPartial(data, this)
+  }
+
+  static readonly runtime: typeof proto3 = proto3
+  static readonly typeName = 'depot.cloud.v3.UsageRequest'
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    {no: 1, name: 'machine_id', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+    {no: 2, name: 'cache', kind: 'message', T: Cache},
+  ])
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UsageRequest {
+    return new UsageRequest().fromBinary(bytes, options)
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UsageRequest {
+    return new UsageRequest().fromJson(jsonValue, options)
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UsageRequest {
+    return new UsageRequest().fromJsonString(jsonString, options)
+  }
+
+  static equals(
+    a: UsageRequest | PlainMessage<UsageRequest> | undefined,
+    b: UsageRequest | PlainMessage<UsageRequest> | undefined,
+  ): boolean {
+    return proto3.util.equals(UsageRequest, a, b)
+  }
+}
+
+/**
+ * @generated from message depot.cloud.v3.Cache
+ */
+export class Cache extends Message<Cache> {
+  /**
+   * Response is the output of the `buildkit du` command.
+   *
+   * @generated from field: string buildkit_du_json = 1;
+   */
+  buildkitDuJson = ''
+
+  constructor(data?: PartialMessage<Cache>) {
+    super()
+    proto3.util.initPartial(data, this)
+  }
+
+  static readonly runtime: typeof proto3 = proto3
+  static readonly typeName = 'depot.cloud.v3.Cache'
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    {no: 1, name: 'buildkit_du_json', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+  ])
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Cache {
+    return new Cache().fromBinary(bytes, options)
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Cache {
+    return new Cache().fromJson(jsonValue, options)
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Cache {
+    return new Cache().fromJsonString(jsonString, options)
+  }
+
+  static equals(a: Cache | PlainMessage<Cache> | undefined, b: Cache | PlainMessage<Cache> | undefined): boolean {
+    return proto3.util.equals(Cache, a, b)
+  }
+}
+
+/**
+ * @generated from message depot.cloud.v3.UsageResponse
+ */
+export class UsageResponse extends Message<UsageResponse> {
+  constructor(data?: PartialMessage<UsageResponse>) {
+    super()
+    proto3.util.initPartial(data, this)
+  }
+
+  static readonly runtime: typeof proto3 = proto3
+  static readonly typeName = 'depot.cloud.v3.UsageResponse'
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [])
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UsageResponse {
+    return new UsageResponse().fromBinary(bytes, options)
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UsageResponse {
+    return new UsageResponse().fromJson(jsonValue, options)
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UsageResponse {
+    return new UsageResponse().fromJsonString(jsonString, options)
+  }
+
+  static equals(
+    a: UsageResponse | PlainMessage<UsageResponse> | undefined,
+    b: UsageResponse | PlainMessage<UsageResponse> | undefined,
+  ): boolean {
+    return proto3.util.equals(UsageResponse, a, b)
+  }
+}
