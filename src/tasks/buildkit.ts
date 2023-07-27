@@ -87,6 +87,9 @@ keepBytes = ${cacheSizeBytes}
 
   const env: Record<string, string> = {
     BUILDKIT_STEP_LOG_MAX_SIZE: '52428800', // 50 MB
+
+    DEPOT_KEEPALIVE_SERVER_POLICY_PERMIT_WITHOUT_STREAM: 'true',
+    DEPOT_KEEPALIVE_SERVER_POLICY_MINTIME_MS: '120000', // 2 minutes
   }
 
   if (task.traceEndpoint) {
