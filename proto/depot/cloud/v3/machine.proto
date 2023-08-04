@@ -32,6 +32,8 @@ message RegisterMachineResponse {
     string path = 1;
     string device = 2;
     FilesystemType fs_type = 3;
+    optional CephVolume ceph_volume = 4;
+    optional string options = 5;
 
     enum FilesystemType {
       FILESYSTEM_TYPE_UNSPECIFIED = 0;
@@ -51,8 +53,6 @@ message RegisterMachineResponse {
       // Store at /etc/ceph/ceph.conf
       string ceph_conf = 4;
     }
-    // Initialize the ceph if present.
-    optional CephVolume ceph_volume = 4;
   }
 
   // PendingTask represents an instruction to wait for a task to be assigned

@@ -204,11 +204,14 @@ export class RegisterMachineResponse_Mount extends Message<RegisterMachineRespon
   fsType = RegisterMachineResponse_Mount_FilesystemType.UNSPECIFIED
 
   /**
-   * Initialize the ceph if present.
-   *
    * @generated from field: optional depot.cloud.v3.RegisterMachineResponse.Mount.CephVolume ceph_volume = 4;
    */
   cephVolume?: RegisterMachineResponse_Mount_CephVolume
+
+  /**
+   * @generated from field: optional string options = 5;
+   */
+  options?: string
 
   constructor(data?: PartialMessage<RegisterMachineResponse_Mount>) {
     super()
@@ -222,6 +225,7 @@ export class RegisterMachineResponse_Mount extends Message<RegisterMachineRespon
     {no: 2, name: 'device', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 3, name: 'fs_type', kind: 'enum', T: proto3.getEnumType(RegisterMachineResponse_Mount_FilesystemType)},
     {no: 4, name: 'ceph_volume', kind: 'message', T: RegisterMachineResponse_Mount_CephVolume, opt: true},
+    {no: 5, name: 'options', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_Mount {
