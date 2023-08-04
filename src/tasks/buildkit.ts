@@ -12,7 +12,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
 
   let useCeph = false
   for (const mount of task.mounts) {
-    await ensureMounted(mount.device, mount.path, mount.fsType, mount.cephVolume)
+    await ensureMounted(mount.device, mount.path, mount.fsType, mount.cephVolume, mount.options)
     if (mount.cephVolume) useCeph = true
   }
 

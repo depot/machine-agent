@@ -11,6 +11,7 @@ export async function ensureMounted(
   path: string,
   fstype: RegisterMachineResponse_Mount_FilesystemType,
   cephVolume: RegisterMachineResponse_Mount_CephVolume | undefined,
+  options: string | undefined,
 ) {
   console.log(`Ensuring ${device} is mounted at ${path}`)
 
@@ -45,7 +46,7 @@ export async function ensureMounted(
 
   console.log(`Mounting ${device} at ${path}`)
   await fsp.mkdir(path, {recursive: true})
-  await mountDevice(realDevice, path, fstype)
+  await mountDevice(realDevice, path, fstype, options)
 }
 
 async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume) {
@@ -69,7 +70,12 @@ async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume) 
   await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath], {stdio: 'inherit'})
 }
 
-async function mountDevice(device: string, path: string, fstype: RegisterMachineResponse_Mount_FilesystemType) {
+async function mountDevice(
+  device: string,
+  path: string,
+  fstype: RegisterMachineResponse_Mount_FilesystemType,
+  options: string | undefined,
+) {
   const types =
     fstype === RegisterMachineResponse_Mount_FilesystemType.EXT4
       ? ['ext4', 'xfs', 'btrfs']
@@ -79,7 +85,7 @@ async function mountDevice(device: string, path: string, fstype: RegisterMachine
 
   for (const type of types) {
     try {
-      await execa('mount', ['-t', type, '-o', 'defaults', device, path], {stdio: 'inherit'})
+      await execa('mount', ['-t', type, '-o', options || 'defaults', device, path], {stdio: 'inherit'})
       return
     } catch {}
   }
