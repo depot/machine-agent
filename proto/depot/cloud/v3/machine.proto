@@ -74,6 +74,9 @@ message RegisterMachineResponse {
     // Turns off merging feature of buildkit.  Attempting to help GDC.
     optional bool disable_merge_to = 12;
     int32 max_parallelism = 13;
+
+    // Disable fstrim on shutdown
+    optional bool disable_fstrim = 14;
   }
 
   // Specifies sending buildkit profiling data to a remote endpoint.
