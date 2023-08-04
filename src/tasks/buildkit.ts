@@ -157,7 +157,9 @@ keepBytes = ${cacheSizeBytes}
 
     for (const mount of task.mounts) {
       if (mount.cephVolume) {
-        await fstrim(mount.path)
+        if (!task.disableFstrim) {
+          await fstrim(mount.path)
+        }
         await unmountDevice(mount.device)
         await unmapBlockDevice(mount.cephVolume.volumeName)
       } else {
