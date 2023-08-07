@@ -1,6 +1,6 @@
 {
-  "private": true,
   "type": "module",
+  "private": true,
   "packageManager": "pnpm@8.6.11",
   "scripts": {
     "build": "./support/build.sh",
@@ -34,5 +34,16 @@
     "prettier-plugin-organize-imports": "^3.2.3",
     "prettier-plugin-pkg": "^0.18.0",
     "typescript": "^5.1.6"
+  },
+  "prettier": {
+    "bracketSpacing": false,
+    "printWidth": 120,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "plugins": [
+      "prettier-plugin-pkg",
+      "prettier-plugin-organize-imports"
+    ]
   }
 }
