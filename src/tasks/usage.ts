@@ -1,5 +1,5 @@
 import {execa} from 'execa'
-import {du} from '../utils/cache'
+import {du} from '../utils/buildkit'
 import {sleep} from '../utils/common'
 import {client} from '../utils/grpc'
 
