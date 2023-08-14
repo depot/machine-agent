@@ -1,7 +1,7 @@
 import {Code, ConnectError} from '@bufbuild/connect'
 import * as Sentry from '@sentry/node'
 import {startBuildKit} from './tasks/buildkit'
-import {assertNever, promises, sleep} from './utils/common'
+import {promises, sleep} from './utils/common'
 import {DEPOT_CLOUD_CONNECTION_ID, DEPOT_MACHINE_AGENT_VERSION} from './utils/env'
 import {client} from './utils/grpc'
 import {getBase64Signature, getInstanceIdentityDocument} from './utils/imds'
@@ -36,19 +36,7 @@ async function runLoop() {
 
     for await (const message of stream) {
       if (!message.task) continue
-
-      switch (message.task?.case) {
-        case 'pending':
-        case undefined:
-          await sleep(1000)
-          break
-        case 'buildkit':
-          await startBuildKit(message, message.task.value)
-          break
-
-        default:
-          assertNever(message.task)
-      }
+      if (message.task.case === 'buildkit') await startBuildKit(message, message.task.value)
     }
   } catch (err) {
     if (err instanceof ConnectError && err.code === Code.Internal && err.message.includes('RST_STREAM')) {
