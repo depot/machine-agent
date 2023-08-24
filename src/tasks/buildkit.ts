@@ -90,6 +90,7 @@ keepBytes = ${cacheSizeBytes}
 
     DEPOT_KEEPALIVE_SERVER_POLICY_PERMIT_WITHOUT_STREAM: 'true',
     DEPOT_KEEPALIVE_SERVER_POLICY_MINTIME_MS: '120000', // 2 minutes
+    DEPOT_BUILDKIT_TOKEN: token,
   }
 
   if (task.traceEndpoint) {
