@@ -12,7 +12,7 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Compute tag name
         id: tag-name
         run: echo "::set-output name=tag-name::${GITHUB_REF#refs/tags/}"
