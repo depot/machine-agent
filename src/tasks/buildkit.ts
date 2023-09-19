@@ -120,6 +120,10 @@ keepBytes = ${cacheSizeBytes}
     env.BUILDKIT_SCHEDULER_DEBUG = '1'
   }
 
+  if (task.resolverConcurrency) {
+    env.DEPOT_RESOLVER_CONCURRENCY = task.resolverConcurrency.toString()
+  }
+
   async function runBuildKit() {
     try {
       await execa('/usr/bin/buildkitd', [], {stdio: 'inherit', signal, env})

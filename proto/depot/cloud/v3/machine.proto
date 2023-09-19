@@ -77,6 +77,8 @@ message RegisterMachineResponse {
 
     // Disable fstrim on shutdown
     optional bool disable_fstrim = 14;
+    // Number of concurrent fetchers/pushers per domain name
+    optional int32 resolver_concurrency = 15;
   }
 
   // Specifies sending buildkit profiling data to a remote endpoint.
