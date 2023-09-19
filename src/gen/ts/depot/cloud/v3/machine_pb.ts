@@ -465,6 +465,13 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
    */
   disableFstrim?: boolean
 
+  /**
+   * Number of concurrent fetchers/pushers per domain name
+   *
+   * @generated from field: optional int32 resolver_concurrency = 15;
+   */
+  resolverConcurrency?: number
+
   constructor(data?: PartialMessage<RegisterMachineResponse_BuildKitTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -486,6 +493,7 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
     {no: 12, name: 'disable_merge_to', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
     {no: 13, name: 'max_parallelism', kind: 'scalar', T: 5 /* ScalarType.INT32 */},
     {no: 14, name: 'disable_fstrim', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
+    {no: 15, name: 'resolver_concurrency', kind: 'scalar', T: 5 /* ScalarType.INT32 */, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_BuildKitTask {
