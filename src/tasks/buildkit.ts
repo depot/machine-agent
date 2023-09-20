@@ -124,9 +124,11 @@ keepBytes = ${cacheSizeBytes}
     env.DEPOT_RESOLVER_CONCURRENCY = task.resolverConcurrency.toString()
   }
 
+  const args = task.enableDebugLogging ? ['--debug'] : []
+
   async function runBuildKit() {
     try {
-      await execa('/usr/bin/buildkitd', [], {stdio: 'inherit', signal, env})
+      await execa('/usr/bin/buildkitd', args, {stdio: 'inherit', signal, env})
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
         // Ignore this error, it's expected when the process is killed.
