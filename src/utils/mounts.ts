@@ -68,6 +68,7 @@ async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume) 
   const imageSpec = `rbd/${volumeName}/${volumeName}`
   const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
   await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath], {stdio: 'inherit'})
+  console.log(`Mapped ${imageSpec}`)
 }
 
 async function mountDevice(
@@ -120,6 +121,7 @@ export async function mountExecutor() {
 async function waitForDevice(device: string) {
   while (true) {
     try {
+      console.log(`Waiting for ${device} to exist`)
       const stat = await fsp.stat(device)
       if (stat.isBlockDevice()) return
       await sleep(500)
