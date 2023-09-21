@@ -16,7 +16,8 @@ export async function ensureMounted(
   console.log(`Ensuring ${device} is mounted at ${path}`)
 
   if (cephVolume) {
-    await attachCeph(cephVolume)
+    device = await attachCeph(cephVolume)
+    console.log(`Mapped ${cephVolume.volumeName} to ${device}`)
   }
 
   await waitForDevice(device)
@@ -49,15 +50,18 @@ export async function ensureMounted(
   await mountDevice(realDevice, path, fstype, options)
 }
 
-async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume) {
+async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume): Promise<string> {
   const {volumeName, clientName, cephConf, key} = cephVolume
   console.log(`Installing ceph configuration for ${clientName}`)
   await writeCephConf(clientName, cephConf, key)
 
   try {
-    await fsp.stat('/dev/rbd0')
-    console.log(`RBD device already exists`)
-    return
+    const device = await getCephDeviceName(cephVolume)
+    if (device) {
+      await fsp.stat(device)
+      console.log(`RBD device ${device} already exists`)
+      return device
+    }
   } catch {}
 
   console.log(`Attaching ceph ${volumeName} for ${clientName}`)
@@ -69,6 +73,23 @@ async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume) 
   const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
   await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath], {stdio: 'inherit'})
   console.log(`Mapped ${imageSpec}`)
+  const device = await getCephDeviceName(cephVolume)
+  if (!device) throw new Error(`Failed to map ${imageSpec}, could not find device name`)
+  return device
+}
+
+interface CephDevice {
+  pool: string
+  namespace: string
+  name: string
+  device: string
+}
+
+async function getCephDeviceName(cephVolume: RegisterMachineResponse_Mount_CephVolume): Promise<string | null> {
+  const {stdout} = await execa('rbd', ['device', 'list', '--format', 'json'])
+  const devices: CephDevice[] = JSON.parse(stdout)
+  const device = devices.find((d) => d.name === cephVolume.volumeName)
+  return device?.device ?? null
 }
 
 async function mountDevice(
