@@ -103,24 +103,29 @@ keepBytes = ${cacheSizeBytes}
   }
 
   if (task.profiler) {
+    console.log('Enabling profiler')
     env.PROFILER_ENDPOINT = task.profiler.endpoint
     env.PROFILER_TOKEN = task.profiler.token
     env.PROFILER_PROJECT_ID = task.profiler.projectId
   }
 
   if (task.disableParallelGzip) {
+    console.log('Disabling parallel gzip')
     env.DEPOT_DISABLE_PARALLEL_GZIP = '1'
   }
 
   if (task.disableMergeTo) {
+    console.log('Disabling merge to')
     env.DEPOT_DISABLE_MERGE_TO = '1'
   }
 
   if (task.enableSchedulerDebug) {
+    console.log('Enabling scheduler debug')
     env.BUILDKIT_SCHEDULER_DEBUG = '1'
   }
 
   if (task.resolverConcurrency) {
+    console.log(`Setting resolver concurrency to ${task.resolverConcurrency}`)
     env.DEPOT_RESOLVER_CONCURRENCY = task.resolverConcurrency.toString()
   }
 
@@ -128,6 +133,7 @@ keepBytes = ${cacheSizeBytes}
 
   async function runBuildKit() {
     try {
+      console.log('Execing BuildKit')
       await execa('/usr/bin/buildkitd', args, {stdio: 'inherit', signal, env})
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {

@@ -108,6 +108,7 @@ async function mountDevice(
   for (const type of types) {
     try {
       await execa('mount', ['-t', type, '-o', options || 'defaults', device, path], {stdio: 'inherit'})
+      console.log(`Mounted ${device} at ${path}`)
       return
     } catch {}
   }
