@@ -23,8 +23,9 @@ export async function reportUsage({machineId, signal, headers}: ReportUsageParam
   let nextRunTime = Date.now() + REPORT_INTERVAL
   while (true) {
     if (signal.aborted) return
-
     await sleep(1000)
+    if (signal.aborted) return
+
     if (Date.now() < nextRunTime) continue
 
     try {
