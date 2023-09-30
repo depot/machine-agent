@@ -159,6 +159,7 @@ keepBytes = ${cacheSizeBytes}
     controller.abort()
     try {
       await buildkit
+      console.log('BuildKit exited')
     } catch (error) {
       console.log(`BuildKit exited with error: ${error}`)
     }
@@ -173,10 +174,10 @@ keepBytes = ${cacheSizeBytes}
         if (!task.disableFstrim) {
           await fstrim(mount.path)
         }
-        await unmountDevice(mount.device)
+        await unmountDevice(mount.path)
         await unmapBlockDevice(mount.cephVolume.volumeName)
       } else {
-        await unmountDevice(mount.device)
+        await unmountDevice(mount.path)
       }
     }
   })

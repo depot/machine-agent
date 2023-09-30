@@ -119,6 +119,7 @@ async function mountDevice(
 // Unmounts device at path.  If the device is not mounted, this is a no-op.
 export async function unmountDevice(path: string) {
   const {exitCode, stderr} = await execa('umount', [path], {reject: false, stdio: 'inherit'})
+  console.log(`Unmounted ${path} with exit code ${exitCode}`)
   if (exitCode === 0 || exitCode === 32) {
     return
   }
@@ -169,6 +170,7 @@ async function writeCephConf(clientName: string, cephConf: string, key: string) 
 export async function unmapBlockDevice(volumeName: string) {
   const imageSpec = `rbd/${volumeName}/${volumeName}`
   const {exitCode, stderr} = await execa('rbd', ['unmap', imageSpec], {reject: false, stdio: 'inherit'})
+  console.log(`Unmapped ${imageSpec} with exit code ${exitCode}`)
   // 22 means that the device is not mapped a.k.a EINVAL.
   if (exitCode === 0 || exitCode === 22) {
     return
