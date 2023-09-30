@@ -118,13 +118,37 @@ async function mountDevice(
 
 // Unmounts device at path.  If the device is not mounted, this is a no-op.
 export async function unmountDevice(path: string) {
-  const {exitCode, stderr} = await execa('umount', [path], {reject: false, stdio: 'inherit'})
-  console.log(`Unmounted ${path} with exit code ${exitCode}`)
-  if (exitCode === 0 || exitCode === 32) {
-    return
+  // Retry unmounting a few times (5 seconds).
+  for (let i = 0; i < 10; i++) {
+    const {exitCode, stderr} = await execa('umount', [path], {reject: false, stdio: 'inherit'})
+    console.log(`Unmounted ${path} with exit code ${exitCode}: ${stderr}`)
+    if (exitCode === 0) {
+      return
+    }
+
+    // exitCode 32 means that the device is not mounted or busy.
+    if (exitCode != 32) {
+      throw new Error(`Failed to unmount ${path}: ${stderr}`)
+    }
+
+    if (stderr.includes('not mounted')) {
+      return
+    }
+
+    // Print all processes that are using the mount.
+    await execa('fuser', ['-vuMm'], {reject: false, stdio: 'inherit'})
+    await sleep(500)
   }
 
-  throw new Error(`Failed to unmount ${path}: ${stderr}`)
+  console.log(`Failed to unmount ${path} after 5 seconds, killing processes`)
+  // Ok, fine.  We'll just kill (-k) everything that's using the mount...
+  await execa('fuser', ['-kvuMm'], {reject: false, stdio: 'inherit'})
+  await sleep(500)
+  // ... and retry the unmount.
+  const {exitCode, stderr} = await execa('umount', [path], {reject: false, stdio: 'inherit'})
+  if (exitCode !== 0) {
+    throw new Error(`Failed to unmount ${path}: ${stderr}`)
+  }
 }
 
 // Bind-mounts the BuildKit executor directory to the ephemeral disk.
