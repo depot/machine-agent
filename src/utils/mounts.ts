@@ -136,13 +136,13 @@ export async function unmountDevice(path: string) {
     }
 
     // Print all processes that are using the mount.
-    await execa('fuser', ['-vuMm'], {reject: false, stdio: 'inherit'})
+    await execa('fuser', ['-vuMm', path], {reject: false, stdio: 'inherit'})
     await sleep(500)
   }
 
   console.log(`Failed to unmount ${path} after 5 seconds, killing processes`)
   // Ok, fine.  We'll just kill (-k) everything that's using the mount...
-  await execa('fuser', ['-kvuMm'], {reject: false, stdio: 'inherit'})
+  await execa('fuser', ['-kvuMm', path], {reject: false, stdio: 'inherit'})
   await sleep(500)
   // ... and retry the unmount.
   const {exitCode, stderr} = await execa('umount', [path], {reject: false, stdio: 'inherit'})
