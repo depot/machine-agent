@@ -120,14 +120,14 @@ async function mountDevice(
 export async function unmountDevice(path: string) {
   // Retry unmounting a few times (5 seconds).
   for (let i = 0; i < 10; i++) {
-    const {exitCode, stderr} = await execa('umount', [path], {reject: false, stdio: 'inherit'})
+    const {exitCode, stderr} = await execa('umount', [path], {reject: false})
     console.log(`Unmounted ${path} with exit code ${exitCode}: ${stderr}`)
     if (exitCode === 0) {
       return
     }
 
     // exitCode 32 means that the device is not mounted or busy.
-    if (exitCode != 32) {
+    if (exitCode !== 32) {
       throw new Error(`Failed to unmount ${path}: ${stderr}`)
     }
 
@@ -145,7 +145,7 @@ export async function unmountDevice(path: string) {
   await execa('fuser', ['-kvuMm', path], {reject: false, stdio: 'inherit'})
   await sleep(500)
   // ... and retry the unmount.
-  const {exitCode, stderr} = await execa('umount', [path], {reject: false, stdio: 'inherit'})
+  const {exitCode, stderr} = await execa('umount', [path], {reject: false})
   if (exitCode !== 0) {
     throw new Error(`Failed to unmount ${path}: ${stderr}`)
   }
