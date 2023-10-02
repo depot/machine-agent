@@ -1,7 +1,7 @@
 import {isAbortError} from 'abort-controller-x'
 import {execa} from 'execa'
 import * as fsp from 'fs/promises'
-import {onShutdown} from 'node-graceful-shutdown'
+import {onShutdown, onShutdownError} from 'node-graceful-shutdown'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
 import {reportHealth} from './health'
@@ -149,6 +149,10 @@ keepBytes = ${cacheSizeBytes}
   }
 
   const buildkit = runBuildKit()
+
+  onShutdownError(async (error) => {
+    console.error('Error shutting down:', error)
+  })
 
   onShutdown(async () => {
     setTimeout(() => {
