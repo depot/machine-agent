@@ -137,6 +137,7 @@ export async function unmountDevice(path: string) {
 
     // Print all processes that are using the mount.
     await execa('fuser', ['-vuMm', path], {reject: false, stdio: 'inherit'})
+    await execa('lsof', [path], {reject: false, stdio: 'inherit'})
     await sleep(500)
   }
 
