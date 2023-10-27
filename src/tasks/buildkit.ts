@@ -59,6 +59,7 @@ snapshotter = "stargz"
 no_background_fetch = true
 noprefetch = true
 no_prometheus = true
+max_concurrency = 16
 
 [worker.containerd]
 enabled = false
