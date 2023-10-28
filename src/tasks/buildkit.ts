@@ -60,10 +60,9 @@ no_background_fetch = true
 noprefetch = true
 no_prometheus = true
 max_concurrency = 16
-debug = true
 
 [worker.oci.stargzSnapshotter.blob]
-chunk_size = 500000
+chunk_size = 50000000 # 50 MB
 
 [worker.containerd]
 enabled = false
