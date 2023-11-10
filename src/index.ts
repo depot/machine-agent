@@ -1,5 +1,6 @@
 import {Code, ConnectError} from '@bufbuild/connect'
 import * as Sentry from '@sentry/node'
+import {execa} from 'execa'
 import {startBuildKit} from './tasks/buildkit'
 import {promises, sleep} from './utils/common'
 import {DEPOT_CLOUD_CONNECTION_ID, DEPOT_MACHINE_AGENT_VERSION} from './utils/env'
@@ -15,6 +16,8 @@ async function main() {
     console.log(DEPOT_MACHINE_AGENT_VERSION)
     return
   }
+
+  void prepareCeph()
 
   let done = false
   while (!done) {
@@ -45,6 +48,12 @@ async function runLoop() {
       throw err
     }
   }
+}
+
+async function prepareCeph() {
+  try {
+    await execa('rbd', ['-h'], {stdio: 'inherit', reject: false})
+  } catch {}
 }
 
 main().catch((err) => {
