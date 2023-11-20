@@ -130,7 +130,7 @@ keepBytes = ${cacheSizeBytes}
 
   if (task.enableContextLogging) {
     console.log('Enabling context logging')
-    env.DEPOT_ENABLE_CONTEXT_LOGGING = '1'
+    env.DEPOT_CONTEXTLOG_ENABLED = '1'
   }
 
   if (task.resolverConcurrency) {
