@@ -128,6 +128,11 @@ keepBytes = ${cacheSizeBytes}
     env.BUILDKIT_SCHEDULER_DEBUG = '1'
   }
 
+  if (task.enableContextLogging) {
+    console.log('Enabling context logging')
+    env.DEPOT_ENABLE_CONTEXT_LOGGING = '1'
+  }
+
   if (task.resolverConcurrency) {
     console.log(`Setting resolver concurrency to ${task.resolverConcurrency}`)
     env.DEPOT_RESOLVER_CONCURRENCY = task.resolverConcurrency.toString()
