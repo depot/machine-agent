@@ -81,6 +81,9 @@ message RegisterMachineResponse {
     optional int32 resolver_concurrency = 15;
     // Enable buildkit debug logging
     optional bool enable_debug_logging = 16;
+    // Enable buildkit context logging.  This can be deprecated in the future
+    // when all customers are using context logging.
+    optional bool enable_context_logging = 17;
   }
 
   // Specifies sending buildkit profiling data to a remote endpoint.
