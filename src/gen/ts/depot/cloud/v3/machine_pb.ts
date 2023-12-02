@@ -148,6 +148,13 @@ export class RegisterMachineResponse extends Message<RegisterMachineResponse> {
         value: RegisterMachineResponse_BuildKitTask
         case: 'buildkit'
       }
+    | {
+        /**
+         * @generated from field: depot.cloud.v3.RegisterMachineResponse.EngineTask engine = 5;
+         */
+        value: RegisterMachineResponse_EngineTask
+        case: 'engine'
+      }
     | {case: undefined; value?: undefined} = {case: undefined}
 
   constructor(data?: PartialMessage<RegisterMachineResponse>) {
@@ -162,6 +169,7 @@ export class RegisterMachineResponse extends Message<RegisterMachineResponse> {
     {no: 2, name: 'token', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 3, name: 'pending', kind: 'message', T: RegisterMachineResponse_PendingTask, oneof: 'task'},
     {no: 4, name: 'buildkit', kind: 'message', T: RegisterMachineResponse_BuildKitTask, oneof: 'task'},
+    {no: 5, name: 'engine', kind: 'message', T: RegisterMachineResponse_EngineTask, oneof: 'task'},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse {
@@ -530,6 +538,78 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
     b: RegisterMachineResponse_BuildKitTask | PlainMessage<RegisterMachineResponse_BuildKitTask> | undefined,
   ): boolean {
     return proto3.util.equals(RegisterMachineResponse_BuildKitTask, a, b)
+  }
+}
+
+/**
+ * EngineTask represents an instruction to start an engine daemon
+ *
+ * @generated from message depot.cloud.v3.RegisterMachineResponse.EngineTask
+ */
+export class RegisterMachineResponse_EngineTask extends Message<RegisterMachineResponse_EngineTask> {
+  /**
+   * @generated from field: string image = 1;
+   */
+  image = ''
+
+  /**
+   * @generated from field: string server_name = 2;
+   */
+  serverName = ''
+
+  /**
+   * @generated from field: depot.cloud.v3.Cert cert = 3;
+   */
+  cert?: Cert
+
+  /**
+   * @generated from field: depot.cloud.v3.Cert ca_cert = 4;
+   */
+  caCert?: Cert
+
+  /**
+   * @generated from field: repeated depot.cloud.v3.RegisterMachineResponse.Mount mounts = 5;
+   */
+  mounts: RegisterMachineResponse_Mount[] = []
+
+  /**
+   * @generated from field: int32 cache_size = 6;
+   */
+  cacheSize = 0
+
+  constructor(data?: PartialMessage<RegisterMachineResponse_EngineTask>) {
+    super()
+    proto3.util.initPartial(data, this)
+  }
+
+  static readonly runtime: typeof proto3 = proto3
+  static readonly typeName = 'depot.cloud.v3.RegisterMachineResponse.EngineTask'
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    {no: 1, name: 'image', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+    {no: 2, name: 'server_name', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+    {no: 3, name: 'cert', kind: 'message', T: Cert},
+    {no: 4, name: 'ca_cert', kind: 'message', T: Cert},
+    {no: 5, name: 'mounts', kind: 'message', T: RegisterMachineResponse_Mount, repeated: true},
+    {no: 6, name: 'cache_size', kind: 'scalar', T: 5 /* ScalarType.INT32 */},
+  ])
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_EngineTask {
+    return new RegisterMachineResponse_EngineTask().fromBinary(bytes, options)
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RegisterMachineResponse_EngineTask {
+    return new RegisterMachineResponse_EngineTask().fromJson(jsonValue, options)
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RegisterMachineResponse_EngineTask {
+    return new RegisterMachineResponse_EngineTask().fromJsonString(jsonString, options)
+  }
+
+  static equals(
+    a: RegisterMachineResponse_EngineTask | PlainMessage<RegisterMachineResponse_EngineTask> | undefined,
+    b: RegisterMachineResponse_EngineTask | PlainMessage<RegisterMachineResponse_EngineTask> | undefined,
+  ): boolean {
+    return proto3.util.equals(RegisterMachineResponse_EngineTask, a, b)
   }
 }
 
