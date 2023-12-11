@@ -18,6 +18,7 @@ export async function startEngine(message: RegisterMachineResponse, task: Regist
   const {machineId, token} = message
   const headers = {Authorization: `Bearer ${token}`}
 
+  await fsp.mkdir('/etc/engine', {recursive: true})
   await fsp.writeFile('/etc/engine/tls.crt', task.cert!.cert, {mode: 0o644})
   await fsp.writeFile('/etc/engine/tls.key', task.cert!.key, {mode: 0o644})
   await fsp.writeFile('/etc/engine/tlsca.crt', task.caCert!.cert, {mode: 0o644})
@@ -39,6 +40,8 @@ export async function startEngine(message: RegisterMachineResponse, task: Regist
     task.image,
     '--addr',
     'tcp://0.0.0.0:443',
+    '--addr',
+    'unix:///run/buildkit/buildkitd.sock',
     '--root',
     '/var/lib/engine',
     '--tlscert',
