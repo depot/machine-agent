@@ -1,3 +1,4 @@
+import {isAbortError} from 'abort-controller-x'
 import {fetch} from 'undici'
 
 export async function getInstanceIdentityDocument() {
@@ -25,18 +26,46 @@ export async function getRSA2048Signature() {
 }
 
 async function getToken(ttlSeconds: number = 21600) {
-  const res = await fetch('http://169.254.169.254/latest/api/token', {
-    method: 'PUT',
-    headers: {'X-aws-ec2-metadata-token-ttl-seconds': ttlSeconds.toString()},
-  })
-  const token = await res.text()
-  return token
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 1000)
+
+  try {
+    const res = await fetch('http://169.254.169.254/latest/api/token', {
+      method: 'PUT',
+      headers: {'X-aws-ec2-metadata-token-ttl-seconds': ttlSeconds.toString()},
+      signal: controller.signal,
+    })
+
+    const token = await res.text()
+    clearTimeout(timeout)
+    return token
+  } catch (err) {
+    if (isAbortError(err)) {
+      throw new Error('IMDS token request timed out')
+    } else {
+      throw err
+    }
+  }
 }
 
 async function getMetadata(path: string, token: string) {
-  const res = await fetch(`http://169.254.169.254/${path}`, {
-    headers: {'X-aws-ec2-metadata-token': token},
-  })
-  const data = await res.text()
-  return data
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 1000)
+
+  try {
+    const res = await fetch(`http://169.254.169.254/${path}`, {
+      headers: {'X-aws-ec2-metadata-token': token},
+      signal: controller.signal,
+    })
+
+    const data = await res.text()
+    clearTimeout(timeout)
+    return data
+  } catch (err) {
+    if (isAbortError(err)) {
+      throw new Error(`IMDS request timed out: ${path}`)
+    } else {
+      throw err
+    }
+  }
 }
