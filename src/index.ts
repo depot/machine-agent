@@ -35,8 +35,12 @@ async function main() {
 
 async function runLoop() {
   try {
+    console.log('Retrieving AWS IMDS metadata')
     const aws = await promises({document: getInstanceIdentityDocument(), signature: getBase64Signature()})
+
+    console.log('Connecting to task stream')
     const stream = client.registerMachine({connectionId: DEPOT_CLOUD_CONNECTION_ID, cloud: {case: 'aws', value: aws}})
+    console.log('Connected to task stream')
 
     for await (const message of stream) {
       if (!message.task) continue
