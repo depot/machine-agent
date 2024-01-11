@@ -10,6 +10,13 @@ import {reportUsage} from './usage'
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   console.log('Starting BuildKit')
 
+  if (task.vectorConfig) {
+    try {
+      await fsp.writeFile('/etc/vector/vector.yaml', task.vectorConfig)
+      await execa('systemctl', ['kill', '-s', 'HUP', '--kill-who=main', 'vector.service'], {stdio: 'inherit'})
+    } catch {}
+  }
+
   let useCeph = false
   for (const mount of task.mounts) {
     await ensureMounted(mount.device, mount.path, mount.fsType, mount.cephVolume, mount.options)

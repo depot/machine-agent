@@ -85,6 +85,7 @@ message RegisterMachineResponse {
     // Enable buildkit context logging.  This can be deprecated in the future
     // when all customers are using context logging.
     optional bool enable_context_logging = 17;
+    optional string vector_config = 18;
   }
 
   // EngineTask represents an instruction to start an engine daemon
