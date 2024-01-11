@@ -495,6 +495,11 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
    */
   enableContextLogging?: boolean
 
+  /**
+   * @generated from field: optional string vector_config = 18;
+   */
+  vectorConfig?: string
+
   constructor(data?: PartialMessage<RegisterMachineResponse_BuildKitTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -519,6 +524,7 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
     {no: 15, name: 'resolver_concurrency', kind: 'scalar', T: 5 /* ScalarType.INT32 */, opt: true},
     {no: 16, name: 'enable_debug_logging', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
     {no: 17, name: 'enable_context_logging', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
+    {no: 18, name: 'vector_config', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_BuildKitTask {
