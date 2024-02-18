@@ -20,7 +20,7 @@
     "abort-controller-x": "^0.4.3",
     "execa": "^7.2.0",
     "node-graceful-shutdown": "^1.1.5",
-    "undici": "^5.26.2"
+    "undici": "^5.28.3"
   },
   "devDependencies": {
     "@bufbuild/protoc-gen-connect-es": "^0.12.0",
