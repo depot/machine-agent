@@ -10,6 +10,15 @@ import {reportUsage} from './usage'
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   console.log('Starting BuildKit')
 
+  // Attempt to set up binfmt
+  try {
+    execa('docker', ['run', '--privileged', '--rm', 'tonistiigi/binfmt', '--install', 'all'], {stdio: 'inherit'}).catch(
+      (err) => {
+        console.error(err)
+      },
+    )
+  } catch {}
+
   if (task.vectorConfig) {
     try {
       await fsp.writeFile('/etc/vector/vector.yaml', task.vectorConfig)
