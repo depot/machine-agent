@@ -21,6 +21,6 @@ jobs:
         with:
           outputs: type=local,dest=dist/artifacts
           build-args: VERSION=${{ steps.tag-name.outputs.tag-name }}
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2
         with:
           files: dist/artifacts/*
