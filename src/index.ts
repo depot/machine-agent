@@ -10,6 +10,7 @@ import {getBase64Signature, getInstanceIdentityDocument} from './utils/imds'
 
 Sentry.init({
   dsn: 'https://1b42edcd994c4c9398034d91ced602f0@o1152282.ingest.sentry.io/4504141762920448',
+  ignoreErrors: [/not_found/],
 })
 
 async function main() {
