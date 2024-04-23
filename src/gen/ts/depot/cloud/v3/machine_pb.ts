@@ -33,6 +33,13 @@ export class RegisterMachineRequest extends Message<RegisterMachineRequest> {
         value: RegisterMachineRequest_AWSRegistration
         case: 'aws'
       }
+    | {
+        /**
+         * @generated from field: depot.cloud.v3.RegisterMachineRequest.FlyRegistration fly = 3;
+         */
+        value: RegisterMachineRequest_FlyRegistration
+        case: 'fly'
+      }
     | {case: undefined; value?: undefined} = {case: undefined}
 
   constructor(data?: PartialMessage<RegisterMachineRequest>) {
@@ -45,6 +52,7 @@ export class RegisterMachineRequest extends Message<RegisterMachineRequest> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     {no: 1, name: 'connection_id', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 2, name: 'aws', kind: 'message', T: RegisterMachineRequest_AWSRegistration, oneof: 'cloud'},
+    {no: 3, name: 'fly', kind: 'message', T: RegisterMachineRequest_FlyRegistration, oneof: 'cloud'},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineRequest {
@@ -113,6 +121,49 @@ export class RegisterMachineRequest_AWSRegistration extends Message<RegisterMach
     b: RegisterMachineRequest_AWSRegistration | PlainMessage<RegisterMachineRequest_AWSRegistration> | undefined,
   ): boolean {
     return proto3.util.equals(RegisterMachineRequest_AWSRegistration, a, b)
+  }
+}
+
+/**
+ * @generated from message depot.cloud.v3.RegisterMachineRequest.FlyRegistration
+ */
+export class RegisterMachineRequest_FlyRegistration extends Message<RegisterMachineRequest_FlyRegistration> {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token = ''
+
+  constructor(data?: PartialMessage<RegisterMachineRequest_FlyRegistration>) {
+    super()
+    proto3.util.initPartial(data, this)
+  }
+
+  static readonly runtime: typeof proto3 = proto3
+  static readonly typeName = 'depot.cloud.v3.RegisterMachineRequest.FlyRegistration'
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    {no: 1, name: 'token', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+  ])
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineRequest_FlyRegistration {
+    return new RegisterMachineRequest_FlyRegistration().fromBinary(bytes, options)
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RegisterMachineRequest_FlyRegistration {
+    return new RegisterMachineRequest_FlyRegistration().fromJson(jsonValue, options)
+  }
+
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>,
+  ): RegisterMachineRequest_FlyRegistration {
+    return new RegisterMachineRequest_FlyRegistration().fromJsonString(jsonString, options)
+  }
+
+  static equals(
+    a: RegisterMachineRequest_FlyRegistration | PlainMessage<RegisterMachineRequest_FlyRegistration> | undefined,
+    b: RegisterMachineRequest_FlyRegistration | PlainMessage<RegisterMachineRequest_FlyRegistration> | undefined,
+  ): boolean {
+    return proto3.util.equals(RegisterMachineRequest_FlyRegistration, a, b)
   }
 }
 

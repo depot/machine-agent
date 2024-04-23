@@ -12,11 +12,16 @@ message RegisterMachineRequest {
   string connection_id = 1;
   oneof cloud {
     AWSRegistration aws = 2;
+    FlyRegistration fly = 3;
   }
 
   message AWSRegistration {
     string document = 1;
     string signature = 2;
+  }
+
+  message FlyRegistration {
+    string token = 1;
   }
 }
 
