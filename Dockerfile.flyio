@@ -1,0 +1,22 @@
+FROM --platform=$TARGETPLATFORM amazonlinux
+
+ARG TARGETARCH
+ARG BUILDKIT_VERSION
+ARG MACHINE_AGENT_VERSION
+
+RUN dnf upgrade -y && \
+    dnf install -y htop wget git lsof fuse3 tar pigz e2fsprogs psmisc && \
+    dnf clean all
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN mkdir -p /etc/buildkit && \
+    curl -L "https://github.com/depot/buildkit/releases/download/${BUILDKIT_VERSION}/buildkit-${BUILDKIT_VERSION}.linux-${TARGETARCH}.tar.gz" | \
+    tar -xz -C /usr/bin --strip-components=1
+
+RUN curl -L "https://dl.depot.dev/machine-agent/download/linux/$(uname -m)/${MACHINE_AGENT_VERSION}" | \
+    tar -zx --strip-components=1 --directory /usr/bin bin/machine-agent
+
+# TODO: install vector
+# TODO: binfmt/dagger engine
+
