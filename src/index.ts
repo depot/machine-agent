@@ -1,10 +1,13 @@
 import {Code, ConnectError} from '@bufbuild/connect'
+import {PartialMessage} from '@bufbuild/protobuf'
 import * as Sentry from '@sentry/node'
 import {execa} from 'execa'
+import {RegisterMachineRequest} from './gen/ts/depot/cloud/v3/machine_pb'
 import {startBuildKit} from './tasks/buildkit'
 import {startEngine} from './tasks/engine'
 import {promises, sleep} from './utils/common'
-import {DEPOT_CLOUD_CONNECTION_ID, DEPOT_MACHINE_AGENT_VERSION} from './utils/env'
+import {DEPOT_CLOUD, DEPOT_CLOUD_CONNECTION_ID, DEPOT_MACHINE_AGENT_VERSION} from './utils/env'
+import {getFlyToken} from './utils/fly'
 import {client} from './utils/grpc'
 import {getBase64Signature, getInstanceIdentityDocument} from './utils/imds'
 
@@ -36,11 +39,29 @@ async function main() {
 
 async function runLoop() {
   try {
-    console.log('Retrieving AWS IMDS metadata')
-    const aws = await promises({document: getInstanceIdentityDocument(), signature: getBase64Signature()})
+    let req: PartialMessage<RegisterMachineRequest> = {connectionId: DEPOT_CLOUD_CONNECTION_ID}
+
+    switch (DEPOT_CLOUD) {
+      case 'aws': {
+        console.log('Retrieving AWS IMDS metadata')
+        const aws = await promises({document: getInstanceIdentityDocument(), signature: getBase64Signature()})
+        req.cloud = {case: 'aws', value: aws}
+
+        break
+      }
+      case 'fly': {
+        console.log('Retrieving fly.io OIDC token')
+        const token = await getFlyToken()
+        req.cloud = {case: 'fly', value: {token}}
+
+        break
+      }
+      default:
+        throw new Error(`Unknown cloud provider: ${DEPOT_CLOUD}`)
+    }
 
     console.log('Connecting to task stream')
-    const stream = client.registerMachine({connectionId: DEPOT_CLOUD_CONNECTION_ID, cloud: {case: 'aws', value: aws}})
+    const stream = client.registerMachine(req)
     console.log('Connected to task stream')
 
     for await (const message of stream) {
