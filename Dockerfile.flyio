@@ -3,6 +3,7 @@ FROM --platform=$TARGETPLATFORM amazonlinux
 ARG TARGETARCH
 ARG BUILDKIT_VERSION
 ARG MACHINE_AGENT_VERSION
+ARG CNI_VERSION
 
 RUN dnf upgrade -y && \
     dnf install -y htop wget git lsof fuse3 tar pigz e2fsprogs psmisc && \
@@ -12,10 +13,15 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN mkdir -p /etc/buildkit && \
     curl -L "https://github.com/depot/buildkit/releases/download/${BUILDKIT_VERSION}/buildkit-${BUILDKIT_VERSION}.linux-${TARGETARCH}.tar.gz" | \
-    tar -xz -C /usr/bin --strip-components=1
+    tar -zxv -C /usr/bin --strip-components=1
 
 RUN curl -L "https://dl.depot.dev/machine-agent/download/linux/$(uname -m)/${MACHINE_AGENT_VERSION}" | \
-    tar -zx --strip-components=1 --directory /usr/bin bin/machine-agent
+    tar -zxv --strip-components=1 --directory /usr/bin bin/machine-agent
+
+RUN mkdir -p /opt/cni/bin/ && \
+    curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${TARGETARCH}-${CNI_VERSION}.tgz" | \
+    tar -C /opt/cni/bin/ -zxv
+
 
 # TODO: install vector
 # TODO: binfmt/dagger engine
