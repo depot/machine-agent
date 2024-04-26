@@ -2,12 +2,9 @@ import {isAbortError} from 'abort-controller-x'
 import {Agent, fetch} from 'undici'
 
 export async function getFlyToken(): Promise<string> {
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 1000)
-
   try {
     const res = await fetch('http://localhost/v1/tokens/oidc', {
-      signal: controller.signal,
+      signal: AbortSignal.timeout(1000),
       dispatcher: new Agent({
         connect: {
           socketPath: '/.fly/api',
@@ -16,7 +13,6 @@ export async function getFlyToken(): Promise<string> {
     })
 
     const data = await res.text()
-    clearTimeout(timeout)
     return data
   } catch (err) {
     if (isAbortError(err)) {
