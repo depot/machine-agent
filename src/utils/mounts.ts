@@ -117,9 +117,12 @@ async function mountDevice(
 }
 
 // Unmounts device at path.  If the device is not mounted, this is a no-op.
-export async function unmountDevice(path: string) {
+export async function unmountDevice(path: string, seenPaths = new Set<string>()) {
+  if (seenPaths.has(path)) return
+  seenPaths.add(path)
+
   // Sometimes overlays are left over and need to be unmounted first.
-  const overlays = await findOverlayPaths(path)
+  const overlays = await findOverlayPaths(path, seenPaths)
   for (const overlay of overlays) {
     console.log(`Unmounting overlay ${overlay}`)
     await unmountDevice(overlay)
