@@ -118,6 +118,13 @@ async function mountDevice(
 
 // Unmounts device at path.  If the device is not mounted, this is a no-op.
 export async function unmountDevice(path: string) {
+  // Sometimes overlays are left over and need to be unmounted first.
+  const overlays = await findOverlayPaths(path)
+  for (const overlay of overlays) {
+    console.log(`Unmounting overlay ${overlay}`)
+    await unmountDevice(overlay)
+  }
+
   // Retry unmounting a few times (5 seconds).
   for (let i = 0; i < 10; i++) {
     const {exitCode, stderr} = await execa('umount', [path], {reject: false})
@@ -128,7 +135,7 @@ export async function unmountDevice(path: string) {
 
     // exitCode 32 means that the device is not mounted or busy.
     if (exitCode !== 32) {
-      throw new Error(`Failed to unmount ${path}: ${stderr}`)
+      throw new Error(`Failed to unmount ${path} with exit code ${exitCode} : ${stderr}`)
     }
 
     if (stderr.includes('not mounted')) {
@@ -224,4 +231,35 @@ export async function fstrim(path: string) {
   } finally {
     isTrimInProgress = false
   }
+}
+
+interface FileSystem {
+  target: string
+  source: string
+  fstype: string
+  options: string
+  children?: FileSystem[]
+}
+
+interface FileSystems {
+  filesystems: FileSystem[]
+}
+
+// Returns the paths of all overlayfs mounts that are children of the given path.
+// This is useful to unmount all child mounts before unmounting the parent.
+export async function findOverlayPaths(path: string): Promise<string[]> {
+  const {stdout} = await execa('findmnt', ['-R', '-J', path])
+  const fs: FileSystems = JSON.parse(stdout)
+  if (fs.filesystems.length === 0) {
+    return []
+  }
+
+  const childTargets = new Set<string>()
+  fs.filesystems.forEach((f) => {
+    if (f.children) {
+      f.children.forEach((c) => childTargets.add(c.target))
+    }
+  })
+
+  return Array.from(childTargets)
 }
