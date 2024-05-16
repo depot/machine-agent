@@ -59,7 +59,7 @@ message RegisterMachineResponse {
       // Store at /etc/ceph/ceph.conf
       string ceph_conf = 4;
       // If the image_spec is set use instead of constructing with the volume_name.
-      optional string image_spec = 5;
+      string image_spec = 5;
     }
   }
 
