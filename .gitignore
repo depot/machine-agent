@@ -3,5 +3,6 @@ dist/
 /bin
 
 /CHANGELOG.md
+.DS_STORE
 
 node_modules/
