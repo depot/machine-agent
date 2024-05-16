@@ -220,7 +220,7 @@ keepBytes = ${cacheSizeBytes}
           await fstrim(mount.path)
         }
         await unmountDevice(mount.path)
-        await unmapBlockDevice(mount.cephVolume.volumeName)
+        await unmapBlockDevice(mount.cephVolume.volumeName, mount.cephVolume.imageSpec)
       } else {
         await unmountDevice(mount.path)
       }

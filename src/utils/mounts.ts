@@ -64,13 +64,13 @@ async function attachCeph(cephVolume: RegisterMachineResponse_Mount_CephVolume):
     }
   } catch {}
 
-  console.log(`Attaching ceph ${volumeName} for ${clientName}`)
+  // Temporarily continue to use the volumeName until we switch entirely to imageSpec.
+  const imageSpec = cephVolume.imageSpec ? cephVolume.imageSpec : `rbd/${volumeName}/${volumeName}`
 
+  console.log(`Attaching ceph ${imageSpec} for ${clientName}`)
+  const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
   // NOTE: The API sends the device name as `/dev/rbd/rbd/${volumeName}/${volumeName}`
   // This means we ignore the device name returned from mapping.
-
-  const imageSpec = `rbd/${volumeName}/${volumeName}`
-  const keyringPath = `/etc/ceph/ceph.${clientName}.keyring`
   await execa('rbd', ['map', imageSpec, '--name', clientName, '--keyring', keyringPath], {stdio: 'inherit'})
   console.log(`Mapped ${imageSpec}`)
   const device = await getCephDeviceName(cephVolume)
@@ -202,8 +202,11 @@ async function writeCephConf(clientName: string, cephConf: string, key: string) 
   await fsp.chmod(keyringPath, 0o600)
 }
 
-export async function unmapBlockDevice(volumeName: string) {
-  const imageSpec = `rbd/${volumeName}/${volumeName}`
+export async function unmapBlockDevice(volumeName: string, imageSpec?: string) {
+  // Temporarily continue to use the volumeName until we switch entirely to imageSpec.
+  if (!imageSpec) {
+    imageSpec = `rbd/${volumeName}/${volumeName}`
+  }
   const {exitCode, stderr} = await execa('rbd', ['unmap', imageSpec], {reject: false, stdio: 'inherit'})
   console.log(`Unmapped ${imageSpec} with exit code ${exitCode}`)
   // 22 means that the device is not mapped a.k.a EINVAL.
