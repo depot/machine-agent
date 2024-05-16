@@ -250,7 +250,7 @@ interface FileSystems {
 
 // Returns the paths of all overlayfs mounts that are children of the given path.
 // This is useful to unmount all child mounts before unmounting the parent.
-export async function findOverlayPaths(path: string): Promise<string[]> {
+export async function findOverlayPaths(path: string, seenPaths: Set<string>): Promise<string[]> {
   try {
     const {stdout} = await execa('findmnt', ['-R', '-J', path])
     const fs: FileSystems = JSON.parse(stdout)
@@ -261,6 +261,7 @@ export async function findOverlayPaths(path: string): Promise<string[]> {
     const childTargets = new Set<string>()
     for (const f of fs.filesystems) {
       for (const c of f.children ?? []) {
+        if (seenPaths.has(c.target)) continue
         childTargets.add(c.target)
       }
     }
