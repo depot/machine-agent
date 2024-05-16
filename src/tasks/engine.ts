@@ -100,7 +100,7 @@ export async function startEngine(message: RegisterMachineResponse, task: Regist
     for (const mount of task.mounts) {
       if (mount.cephVolume) {
         await unmountDevice(mount.path)
-        await unmapBlockDevice(mount.cephVolume.volumeName)
+        await unmapBlockDevice(mount.cephVolume.volumeName, mount.cephVolume.imageSpec)
       } else {
         await unmountDevice(mount.path)
       }

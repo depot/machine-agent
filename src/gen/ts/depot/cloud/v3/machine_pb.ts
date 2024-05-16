@@ -377,6 +377,13 @@ export class RegisterMachineResponse_Mount_CephVolume extends Message<RegisterMa
    */
   cephConf = ''
 
+  /**
+   * If the image_spec is set use instead of constructing with the volume_name.
+   *
+   * @generated from field: optional string image_spec = 5;
+   */
+  imageSpec?: string
+
   constructor(data?: PartialMessage<RegisterMachineResponse_Mount_CephVolume>) {
     super()
     proto3.util.initPartial(data, this)
@@ -389,6 +396,7 @@ export class RegisterMachineResponse_Mount_CephVolume extends Message<RegisterMa
     {no: 2, name: 'client_name', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 3, name: 'key', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 4, name: 'ceph_conf', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+    {no: 5, name: 'image_spec', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_Mount_CephVolume {
