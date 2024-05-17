@@ -88,7 +88,10 @@ interface CephDevice {
 async function getCephDeviceName(cephVolume: RegisterMachineResponse_Mount_CephVolume): Promise<string | null> {
   const {stdout} = await execa('rbd', ['device', 'list', '--format', 'json'])
   const devices: CephDevice[] = JSON.parse(stdout)
-  const device = devices.find((d) => d.name === cephVolume.volumeName)
+  const device = devices.find((d) => {
+    const deviceSpec = `${d.pool}/${d.namespace}/${d.name}`
+    return deviceSpec === cephVolume.volumeName || d.name === cephVolume.volumeName
+  })
   return device?.device ?? null
 }
 
