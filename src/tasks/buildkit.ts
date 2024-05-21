@@ -116,6 +116,9 @@ keepBytes = ${cacheSizeBytes}
     }
     await fsp.mkdir('/etc/buildkit', {recursive: true})
     await fsp.writeFile('/etc/buildkit/cni.json', JSON.stringify(cniConfig, null, 2), {mode: 0o644})
+    try {
+      await execa('sysctl', ['-w', 'net.ipv4.ip_forward=1'], {stdio: 'inherit', reject: false})
+    } catch {}
   }
 
   const controller = new AbortController()
