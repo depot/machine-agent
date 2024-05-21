@@ -3,6 +3,7 @@ import {execa} from 'execa'
 import * as fsp from 'fs/promises'
 import {onShutdown, onShutdownError} from 'node-graceful-shutdown'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v3/machine_pb'
+import {pathExists} from '../utils/common'
 import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
 import {reportHealth} from './health'
 import {reportUsage} from './usage'
@@ -102,7 +103,7 @@ keepBytes = ${cacheSizeBytes}
 `
   await fsp.writeFile('/etc/buildkit/buildkitd.toml', config, {mode: 0o644})
 
-  if (task.enableCni) {
+  if (task.enableCni && !(await pathExists('/etc/buildkit/cni.json'))) {
     const cniConfig = {
       cniVersion: '1.0.0',
       name: 'buildkit',
