@@ -71,6 +71,7 @@ gc = true
 gckeepstorage = ${cacheSizeBytes}
 max-parallelism = ${maxParallelism}
 snapshotter = "stargz"
+${task.enableCni ? 'cniConfigPath = "/etc/buildkit/cni.conflist"' : ''}
 
 [worker.oci.stargzSnapshotter]
 no_background_fetch = true
@@ -103,20 +104,27 @@ keepBytes = ${cacheSizeBytes}
 `
   await fsp.writeFile('/etc/buildkit/buildkitd.toml', config, {mode: 0o644})
 
-  if (task.enableCni && !(await pathExists('/etc/buildkit/cni.json'))) {
+  if (task.enableCni && !(await pathExists('/etc/buildkit/cni.conflist'))) {
     const cniConfig = {
       cniVersion: '1.0.0',
       name: 'buildkit',
-      type: 'bridge',
-      bridge: 'buildkit0',
-      isDefaultGateway: true,
-      forceAddress: false,
-      ipMasq: true,
-      hairpinMode: true,
-      ipam: {type: 'host-local', ranges: [[{subnet: '192.168.0.0/16'}]]},
+      plugins: [
+        {
+          type: 'bridge',
+          bridge: 'buildkit0',
+          isDefaultGateway: true,
+          forceAddress: false,
+          ipMasq: true,
+          hairpinMode: true,
+          ipam: {type: 'host-local', ranges: [[{subnet: '192.168.0.0/16'}]]},
+        },
+        {
+          type: 'firewall',
+        },
+      ],
     }
     await fsp.mkdir('/etc/buildkit', {recursive: true})
-    await fsp.writeFile('/etc/buildkit/cni.json', JSON.stringify(cniConfig, null, 2), {mode: 0o644})
+    await fsp.writeFile('/etc/buildkit/cni.conflist', JSON.stringify(cniConfig, null, 2), {mode: 0o644})
     try {
       await execa('sysctl', ['-w', 'net.ipv4.ip_forward=1'], {stdio: 'inherit', reject: false})
     } catch {}
