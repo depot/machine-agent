@@ -122,6 +122,14 @@ keepBytes = ${cacheSizeBytes}
     } catch {}
   }
 
+  if (task.useBuildkitPrivate) {
+    try {
+      await execa('cp', ['/opt/buildkit-private/bin/*', '/usr/bin/'], {stdio: 'inherit', shell: true})
+    } catch (error) {
+      console.error('Unable to use buildkit-private', error)
+    }
+  }
+
   const controller = new AbortController()
   const signal = controller.signal
 

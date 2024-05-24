@@ -564,6 +564,11 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
    */
   enableCni?: boolean
 
+  /**
+   * @generated from field: optional bool use_buildkit_private = 20;
+   */
+  useBuildkitPrivate?: boolean
+
   constructor(data?: PartialMessage<RegisterMachineResponse_BuildKitTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -590,6 +595,7 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
     {no: 17, name: 'enable_context_logging', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
     {no: 18, name: 'vector_config', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
     {no: 19, name: 'enable_cni', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
+    {no: 20, name: 'use_buildkit_private', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_BuildKitTask {
