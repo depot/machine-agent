@@ -1,7 +1,7 @@
 import {execa} from 'execa'
 
 export async function du(): Promise<string | undefined> {
-  const {exitCode, stdout} = await execa(
+  const {exitCode, stdout, stderr} = await execa(
     '/usr/bin/buildctl',
     [
       '--tlsservername',
@@ -27,5 +27,9 @@ export async function du(): Promise<string | undefined> {
       stdin: 'inherit',
     },
   )
-  return exitCode == 0 ? stdout : undefined
+  if (exitCode !== 0) {
+    console.error('Unable to get disk usage', stderr)
+    return undefined
+  }
+  return stdout
 }
