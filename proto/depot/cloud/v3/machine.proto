@@ -121,7 +121,7 @@ message PingMachineHealthRequest {
 }
 
 message DiskSpace {
-  string device = 1;
+  reserved 1;
   string path = 2;
   int64 free_mb = 3;
   int64 total_mb = 4;

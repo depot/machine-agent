@@ -250,7 +250,7 @@ keepBytes = ${cacheSizeBytes}
   try {
     await Promise.all([
       buildkit,
-      reportHealth({machineId, signal, headers, mounts: task.mounts}),
+      reportHealth({machineId, signal, headers, path: '/var/lib/buildkit'}),
       reportUsage({machineId, signal, headers}),
     ])
   } catch (error) {
