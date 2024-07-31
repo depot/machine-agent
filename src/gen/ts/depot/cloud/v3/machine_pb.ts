@@ -795,11 +795,6 @@ export class PingMachineHealthRequest extends Message<PingMachineHealthRequest> 
  */
 export class DiskSpace extends Message<DiskSpace> {
   /**
-   * @generated from field: string device = 1;
-   */
-  device = ''
-
-  /**
    * @generated from field: string path = 2;
    */
   path = ''
@@ -832,7 +827,6 @@ export class DiskSpace extends Message<DiskSpace> {
   static readonly runtime: typeof proto3 = proto3
   static readonly typeName = 'depot.cloud.v3.DiskSpace'
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    {no: 1, name: 'device', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 2, name: 'path', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 3, name: 'free_mb', kind: 'scalar', T: 3 /* ScalarType.INT64 */},
     {no: 4, name: 'total_mb', kind: 'scalar', T: 3 /* ScalarType.INT64 */},

@@ -1,23 +1,16 @@
-import {PlainMessage} from '@bufbuild/protobuf'
 import {execa} from 'execa'
-import {DiskSpace} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {sleep} from '../utils/common'
-import {DiskStats, stats} from '../utils/disk'
+import {stats} from '../utils/disk'
 import {client} from '../utils/grpc'
 
 export interface ReportHealthParams {
   machineId: string
   signal: AbortSignal
   headers: HeadersInit
-  mounts: Mount[]
-}
-
-export interface Mount {
-  device: string
   path: string
 }
 
-export async function reportEngineHealth({machineId, signal, headers, mounts}: ReportHealthParams) {
+export async function reportEngineHealth({machineId, signal, headers, path}: ReportHealthParams) {
   while (true) {
     if (signal.aborted) return
 
@@ -27,23 +20,20 @@ export async function reportEngineHealth({machineId, signal, headers, mounts}: R
       while (true) {
         if (signal.aborted) return
 
-        const disk_stats = await Promise.all(mounts.map(({device, path}) => stats(device, path)))
-        const disks: PlainMessage<DiskSpace>[] = disk_stats
-          .filter((item: DiskStats | undefined): item is DiskStats => {
-            return item !== undefined
-          })
-          .map(({device, path, freeMb, totalMb, freeInodes, totalInodes}) => {
-            return {
-              device,
-              path,
-              freeMb,
-              totalMb,
-              freeInodes,
-              totalInodes,
-            }
-          })
+        const disk_stats = await stats(path)
+        const disk_space = disk_stats
+          ? [
+              {
+                path,
+                freeMb: disk_stats.freeMb,
+                totalMb: disk_stats.totalMb,
+                freeInodes: disk_stats.freeInodes,
+                totalInodes: disk_stats.totalInodes,
+              },
+            ]
+          : undefined
 
-        await client.pingMachineHealth({machineId, disks}, {headers, signal})
+        await client.pingMachineHealth({machineId, disks: disk_space}, {headers, signal})
         await sleep(1000)
       }
     } catch (error) {
