@@ -193,6 +193,11 @@ keepBytes = ${cacheSizeBytes}
     env.DEPOT_RESOLVER_CONCURRENCY = task.resolverConcurrency.toString()
   }
 
+  if (task.enableGpu) {
+    console.log('Enabling GPU')
+    env.DEPOT_ENABLE_GPU = 'true'
+  }
+
   const args = task.enableDebugLogging ? ['--debug'] : []
 
   async function runBuildKit() {

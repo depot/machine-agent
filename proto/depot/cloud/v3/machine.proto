@@ -95,6 +95,7 @@ message RegisterMachineResponse {
     optional string vector_config = 18;
     optional bool enable_cni = 19;
     optional bool use_buildkit_private = 20;
+    optional bool enable_gpu = 21;
   }
 
   // EngineTask represents an instruction to start an engine daemon
