@@ -166,17 +166,17 @@ export async function unmountDevice(path: string, seenPaths = new Set<string>())
 }
 
 // Bind-mounts the BuildKit executor directory to the ephemeral disk.
-export async function mountExecutor() {
+export async function mountExecutor(rootDir: string) {
   const mounts = await fsp.readFile('/proc/mounts', 'utf8')
-  if (mounts.includes('/var/lib/buildkit/runc-stargz/executor')) {
+  if (mounts.includes(`${rootDir}/runc-stargz/executor`)) {
     console.log(`Executor dir is already mounted`)
     return
   }
 
   await execa('mkdir', ['-p', '/mnt/executor'], {stdio: 'inherit'})
-  await execa('rm', ['-rf', '/var/lib/buildkit/runc-stargz/executor'], {stdio: 'inherit'})
-  await execa('mkdir', ['-p', '/var/lib/buildkit/runc-stargz/executor'], {stdio: 'inherit'})
-  await execa('mount', ['--bind', '/mnt/executor', '/var/lib/buildkit/runc-stargz/executor'], {stdio: 'inherit'})
+  await execa('rm', ['-rf', `${rootDir}/runc-stargz/executor`], {stdio: 'inherit'})
+  await execa('mkdir', ['-p', `${rootDir}/runc-stargz/executor`], {stdio: 'inherit'})
+  await execa('mount', ['--bind', '/mnt/executor', `${rootDir}/runc-stargz/executor`], {stdio: 'inherit'})
 }
 
 async function waitForDevice(device: string) {

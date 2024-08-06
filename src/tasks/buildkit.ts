@@ -27,19 +27,22 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
     } catch {}
   }
 
+  let rootDir = '/var/lib/buildkit'
+
   let useCeph = false
   for (const mount of task.mounts) {
+    rootDir = mount.path
     await ensureMounted(mount.device, mount.path, mount.fsType, mount.cephVolume, mount.options)
     if (mount.cephVolume) useCeph = true
   }
 
   if (!useCeph) {
-    await mountExecutor()
+    await mountExecutor(rootDir)
   }
 
   // Attempt to delete old snapshotter data
   try {
-    execa('rm', ['-rf', '/var/lib/buildkit/runc-overlayfs'], {stdio: 'inherit'}).catch((err) => {
+    execa('rm', ['-rf', `${rootDir}/runc-overlayfs`], {stdio: 'inherit'}).catch((err) => {
       console.error(err)
     })
   } catch {}
@@ -55,7 +58,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
   const maxParallelism = task.maxParallelism > 0 ? task.maxParallelism : 12
 
   const config = `
-root = "/var/lib/buildkit"
+root = "${rootDir}"
 
 [grpc]
 address = ["tcp://0.0.0.0:443", "unix:///run/buildkit/buildkitd.sock"]
@@ -230,7 +233,7 @@ keepBytes = ${cacheSizeBytes}
     }
 
     // Remove estargz cache because we will rely on the buildkit layer cache instead.
-    await execa('rm', ['-rf', '/var/lib/buildkit/runc-stargz/snapshots/stargz'], {stdio: 'inherit'}).catch((err) => {
+    await execa('rm', ['-rf', `${rootDir}/runc-stargz/snapshots/stargz`], {stdio: 'inherit'}).catch((err) => {
       console.error(err)
     })
 
