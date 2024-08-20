@@ -1,5 +1,5 @@
-import {createPromiseClient, Interceptor} from '@bufbuild/connect'
-import {createConnectTransport} from '@bufbuild/connect-node'
+import {createPromiseClient, Interceptor} from '@connectrpc/connect'
+import {createConnectTransport} from '@connectrpc/connect-node'
 import {MachineService} from '../gen/ts/depot/cloud/v3/machine_connect'
 import {DEPOT_CLOUD_API_HOST, DEPOT_MACHINE_AGENT_VERSION} from './env'
 

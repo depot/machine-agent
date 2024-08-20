@@ -1,5 +1,5 @@
-import {Code, ConnectError} from '@bufbuild/connect'
 import {PartialMessage} from '@bufbuild/protobuf'
+import {Code, ConnectError} from '@connectrpc/connect'
 import * as Sentry from '@sentry/node'
 import {execa} from 'execa'
 import {RegisterMachineRequest} from './gen/ts/depot/cloud/v3/machine_pb'
