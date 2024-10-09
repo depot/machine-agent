@@ -1,0 +1,52 @@
+FROM --platform=$TARGETPLATFORM ubuntu:22.04
+
+ARG TARGETARCH
+ARG BUILDKIT_VERSION
+ARG BUILDKIT_PRIVATE_VERSION
+ARG NYDUS_VERSION
+ARG MACHINE_AGENT_VERSION
+ARG CNI_VERSION
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl openssl htop wget git lsof fuse3 tar pigz e2fsprogs psmisc gpg && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+    && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+RUN apt-get update && \
+    apt-get install -y nvidia-container-toolkit && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY ./config.toml /etc/nvidia-container-runtime/config.toml
+
+# Required to expose the nvidia libraries to the container.
+COPY ./nvidia.conf /etc/ld.so.conf.d/nvidia.conf
+COPY ./entrypoint.sh /usr/bin/entrypoint.sh
+
+RUN mkdir -p /etc/buildkit && \
+    curl -L "https://github.com/depot/buildkit/releases/download/${BUILDKIT_VERSION}/buildkit-${BUILDKIT_VERSION}.linux-${TARGETARCH}.tar.gz" | \
+    tar -zxv -C /usr/bin --strip-components=1
+
+RUN mkdir -p /opt/buildkit-private/bin && \
+    curl -L "https://dl.depot.dev/buildkit-private/download/linux/$(uname -m)/${BUILDKIT_PRIVATE_VERSION}" | \
+    tar -zxv -C /opt/buildkit-private/bin --strip-components=1
+
+RUN mkdir -p /opt/nydus && \
+    curl -L "https://github.com/dragonflyoss/nydus/releases/download/${NYDUS_VERSION}/nydus-static-${NYDUS_VERSION}-linux-${TARGETARCH}.tgz" | \
+    tar -zxv -C /opt/nydus --strip-components=1 && \
+    cp /opt/nydus/nydus* /usr/bin/
+
+
+RUN curl -L "https://dl.depot.dev/machine-agent/download/linux/$(uname -m)/${MACHINE_AGENT_VERSION}" | \
+    tar -zxv --strip-components=1 --directory /usr/bin bin/machine-agent
+
+RUN mkdir -p /opt/cni/bin/ && \
+    curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${TARGETARCH}-${CNI_VERSION}.tgz" | \
+    tar -C /opt/cni/bin/ -zxv
+
+ENTRYPOINT ["/usr/bin/entrypoint.sh"]
