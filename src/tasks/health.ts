@@ -1,41 +1,40 @@
+import {PlainMessage} from '@bufbuild/protobuf'
 import {execa} from 'execa'
+import {DiskSpace} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {sleep} from '../utils/common'
 import {stats} from '../utils/disk'
 import {client} from '../utils/grpc'
 
 export interface ReportHealthParams {
-  machineId: string
   signal: AbortSignal
   headers: HeadersInit
   path: string
 }
 
-export async function reportHealth({machineId, signal, headers, path}: ReportHealthParams) {
-  while (true) {
-    if (signal.aborted) return
-
+export async function reportHealth({signal, headers, path}: ReportHealthParams) {
+  while (!signal.aborted) {
     await waitForBuildKitWorkers(signal)
 
     try {
-      while (true) {
-        if (signal.aborted) return
-
-        const disk_stats = await stats(path)
-        const disk_space = disk_stats
-          ? [
-              {
-                path,
-                freeMb: disk_stats.freeMb,
-                totalMb: disk_stats.totalMb,
-                freeInodes: disk_stats.freeInodes,
-                totalInodes: disk_stats.totalInodes,
-              },
-            ]
-          : undefined
-
-        await client.pingMachineHealth({machineId, disks: disk_space}, {headers, signal})
-        await sleep(1000)
+      async function* stream() {
+        while (!signal.aborted) {
+          const diskStats = await stats(path)
+          if (diskStats) {
+            const diskSpace: PlainMessage<DiskSpace> = {
+              path,
+              freeMb: diskStats.freeMb,
+              totalMb: diskStats.totalMb,
+              freeInodes: diskStats.freeInodes,
+              totalInodes: diskStats.totalInodes,
+            }
+            yield {disks: [diskSpace]}
+          }
+          await sleep(1000)
+        }
       }
+
+      const res = await client.reportMachineHealth(stream(), {headers, signal})
+      if (res.shouldTerminate) return
     } catch (error) {
       console.log('Error reporting health:', error)
     }
