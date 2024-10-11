@@ -5,6 +5,7 @@ package depot.cloud.v3;
 service MachineService {
   rpc RegisterMachine(RegisterMachineRequest) returns (stream RegisterMachineResponse);
   rpc PingMachineHealth(PingMachineHealthRequest) returns (PingMachineHealthResponse);
+  rpc ReportMachineHealth(stream ReportMachineHealthRequest) returns (ReportMachineHealthResponse);
   rpc Usage(UsageRequest) returns (UsageResponse);
 }
 
@@ -131,6 +132,14 @@ message DiskSpace {
 }
 
 message PingMachineHealthResponse {
+  bool should_terminate = 1;
+}
+
+message ReportMachineHealthRequest {
+  repeated DiskSpace disks = 1;
+}
+
+message ReportMachineHealthResponse {
   bool should_terminate = 1;
 }
 

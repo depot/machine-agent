@@ -110,7 +110,7 @@ export async function startEngine(message: RegisterMachineResponse, task: Regist
   try {
     await Promise.all([
       engine,
-      reportEngineHealth({machineId, signal, headers, path: '/var/lib/engine'}),
+      reportEngineHealth({signal, headers, path: '/var/lib/engine'}),
       // reportUsage({machineId, signal, headers}),
     ])
   } catch (error) {
