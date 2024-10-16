@@ -242,6 +242,14 @@ keepBytes = ${cacheSizeBytes}
       console.error(err)
     })
 
+    // Print the time it takes to sync the filesystem.
+    const start = Date.now()
+    // sync the filesystem to ensure all data is written to disk.
+    await execa('sync', {stdio: 'inherit'}).catch((err) => {
+      console.error(err)
+    })
+    console.log(`sync took ${Date.now() - start}ms`)
+
     for (const mount of task.mounts) {
       if (mount.cephVolume) {
         if (!task.disableFstrim) {
