@@ -4,6 +4,7 @@ import * as fsp from 'fs/promises'
 import {onShutdown, onShutdownError} from 'node-graceful-shutdown'
 import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {pathExists} from '../utils/common'
+import {client} from '../utils/grpc'
 import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
 import {reportHealth} from './health'
 import {reportUsage} from './usage'
@@ -209,6 +210,9 @@ keepBytes = ${cacheSizeBytes}
         // Ignore this error, it's expected when the process is killed.
       } else if (isAbortError(error)) {
         // Ignore this error, it's expected when the process is killed.
+      } else if (error instanceof Error && error.message.includes('Command failed with exit code 2')) {
+        console.error(`BuildKit exited with panic: ${error}`)
+        throw error
       } else {
         throw error
       }
@@ -237,41 +241,66 @@ keepBytes = ${cacheSizeBytes}
       console.log(`BuildKit exited with error: ${error}`)
     }
 
-    // Remove estargz cache because we will rely on the buildkit layer cache instead.
-    await execa('rm', ['-rf', `${rootDir}/runc-stargz/snapshots/stargz`], {stdio: 'inherit'}).catch((err) => {
-      console.error(err)
-    })
-
-    // Print the time it takes to sync the filesystem.
-    const start = Date.now()
-    // sync the filesystem to ensure all data is written to disk.
-    await execa('sync', {stdio: 'inherit'}).catch((err) => {
-      console.error(err)
-    })
-    console.log(`sync took ${Date.now() - start}ms`)
-
-    for (const mount of task.mounts) {
-      if (mount.cephVolume) {
-        if (!task.disableFstrim) {
-          await fstrim(mount.path)
-        }
-        await unmountDevice(mount.path)
-        await unmapBlockDevice(mount.cephVolume.volumeName, mount.cephVolume.imageSpec)
-      } else {
-        await unmountDevice(mount.path)
-      }
-    }
+    await shutdown(rootDir, task)
   })
 
   try {
-    await Promise.all([
+    const [result] = await Promise.allSettled([
       buildkit,
-      reportHealth({signal, headers, path: rootDir}),
+      reportHealth({controller, headers, path: rootDir}),
       reportUsage({machineId, signal, headers}),
     ])
+    if (result.status === 'rejected') {
+      throw result.reason
+    }
+
+    // If we have successfully stopped buildkit, we can shutdown.
+    await shutdown(rootDir, task)
   } catch (error) {
     throw error
   } finally {
     controller.abort()
   }
+}
+
+async function shutdown(rootDir: string, task: RegisterMachineResponse_BuildKitTask) {
+  // Remove estargz cache because we will rely on the buildkit layer cache instead.
+  await execa('rm', ['-rf', `${rootDir}/runc-stargz/snapshots/stargz`], {stdio: 'inherit'}).catch((err) => {
+    console.error(err)
+  })
+
+  // Print the time it takes to sync the filesystem.
+  const start = Date.now()
+  // sync the filesystem to ensure all data is written to disk.
+  await execa('sync', {stdio: 'inherit'}).catch((err) => {
+    console.error(err)
+  })
+  console.log(`sync took ${Date.now() - start}ms`)
+
+  for (const mount of task.mounts) {
+    if (mount.cephVolume) {
+      if (!task.disableFstrim) {
+        await fstrim(mount.path)
+      }
+      await unmountDevice(mount.path)
+      await unmapBlockDevice(mount.cephVolume.volumeName, mount.cephVolume.imageSpec)
+    } else {
+      await unmountDevice(mount.path)
+    }
+  }
+
+  // Report shutdown to the API to indicate that the machine is no longer available.
+  await reportShutdown()
+}
+
+async function reportShutdown() {
+  const controller = new AbortController()
+  const signal = controller.signal
+
+  const shutdown = client.shutdown({}, {signal})
+
+  const timeout = 5000
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+  return shutdown.finally(() => clearTimeout(timeoutId))
 }
