@@ -2,11 +2,12 @@ import {isAbortError} from 'abort-controller-x'
 import {execa} from 'execa'
 import * as fsp from 'fs/promises'
 import {onShutdown, onShutdownError} from 'node-graceful-shutdown'
-import {RegisterMachineResponse, RegisterMachineResponse_EngineTask} from '../gen/ts/depot/cloud/v3/machine_pb'
-import {ensureMounted, unmapBlockDevice, unmountDevice} from '../utils/mounts'
+import {RegisterMachineResponse_EngineTask} from '../gen/ts/depot/cloud/v3/machine_pb'
+import {ensureMounted} from '../utils/mounts'
 import {reportEngineHealth} from './engineHealth'
+import {ShutdownDagger} from './shutdown'
 
-export async function startEngine(message: RegisterMachineResponse, task: RegisterMachineResponse_EngineTask) {
+export async function startEngine(token: string, task: RegisterMachineResponse_EngineTask) {
   console.log('Starting engine')
 
   let useCeph = false
@@ -15,7 +16,6 @@ export async function startEngine(message: RegisterMachineResponse, task: Regist
     if (mount.cephVolume) useCeph = true
   }
 
-  const {machineId, token} = message
   const headers = {Authorization: `Bearer ${token}`}
 
   await fsp.mkdir('/etc/engine', {recursive: true})
@@ -77,7 +77,21 @@ export async function startEngine(message: RegisterMachineResponse, task: Regist
     }
   }
 
-  const engine = runEngine()
+  const engine = async () => {
+    try {
+      await Promise.allSettled([runEngine(), reportEngineHealth({controller, headers, path: '/var/lib/engine'})])
+      console.log('Engine exited')
+    } catch (error) {
+      console.error(`Engine exited with error: ${error}`)
+    }
+
+    try {
+      await ShutdownDagger('/var/lib/engine', task.mounts)
+    } catch (error) {
+      console.error(`Error shutting down: ${error}`)
+    }
+  }
+  const run = engine()
 
   onShutdownError(async (error) => {
     console.error('Error shutting down:', error)
@@ -90,32 +104,8 @@ export async function startEngine(message: RegisterMachineResponse, task: Regist
     }, 1000 * 60).unref()
 
     controller.abort()
-    try {
-      await engine
-      console.log('Engine exited')
-    } catch (error) {
-      console.log(`Engine exited with error: ${error}`)
-    }
-
-    for (const mount of task.mounts) {
-      if (mount.cephVolume) {
-        await unmountDevice(mount.path)
-        await unmapBlockDevice(mount.cephVolume.volumeName, mount.cephVolume.imageSpec)
-      } else {
-        await unmountDevice(mount.path)
-      }
-    }
+    await run
   })
 
-  try {
-    await Promise.all([
-      engine,
-      reportEngineHealth({signal, headers, path: '/var/lib/engine'}),
-      // reportUsage({machineId, signal, headers}),
-    ])
-  } catch (error) {
-    throw error
-  } finally {
-    controller.abort()
-  }
+  await run
 }

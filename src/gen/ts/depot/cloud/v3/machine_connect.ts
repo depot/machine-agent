@@ -11,6 +11,8 @@ import {
   RegisterMachineResponse,
   ReportMachineHealthRequest,
   ReportMachineHealthResponse,
+  ShutdownRequest,
+  ShutdownResponse,
   UsageRequest,
   UsageResponse,
 } from './machine_pb'
@@ -55,6 +57,15 @@ export const MachineService = {
       name: 'Usage',
       I: UsageRequest,
       O: UsageResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc depot.cloud.v3.MachineService.Shutdown
+     */
+    shutdown: {
+      name: 'Shutdown',
+      I: ShutdownRequest,
+      O: ShutdownResponse,
       kind: MethodKind.Unary,
     },
   },

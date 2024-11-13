@@ -38,6 +38,10 @@ async function main() {
 }
 
 async function runLoop() {
+  let buildTask: Promise<void> | undefined
+  const controller = new AbortController()
+  const signal = controller.signal
+
   try {
     let req: PartialMessage<RegisterMachineRequest> = {connectionId: DEPOT_CLOUD_CONNECTION_ID}
 
@@ -61,19 +65,38 @@ async function runLoop() {
     }
 
     console.log('Connecting to task stream')
-    const stream = client.registerMachine(req)
+    const stream = client.registerMachine(req, {signal})
     console.log('Connected to task stream')
 
     for await (const message of stream) {
       if (!message.task) continue
-      if (message.task.case === 'buildkit') await startBuildKit(message, message.task.value)
-      if (message.task.case === 'engine') await startEngine(message, message.task.value)
+      const {token, machineId} = message
+
+      if (message.task.case === 'buildkit') {
+        buildTask = startBuildKit(token, machineId, message.task.value)
+        break
+      }
+      if (message.task.case === 'engine') {
+        buildTask = startEngine(token, message.task.value)
+        break
+      }
     }
   } catch (err) {
     if (err instanceof ConnectError && err.code === Code.Internal && err.message.includes('RST_STREAM')) {
       console.log('Connection closed by server')
     } else {
       throw err
+    }
+  } finally {
+    controller.abort()
+  }
+
+  if (buildTask) {
+    try {
+      await buildTask
+    } catch (err) {
+      Sentry.captureException(err)
+      console.log(err)
     }
   }
 }

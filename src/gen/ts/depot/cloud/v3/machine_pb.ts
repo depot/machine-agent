@@ -1140,3 +1140,69 @@ export class UsageResponse extends Message<UsageResponse> {
     return proto3.util.equals(UsageResponse, a, b)
   }
 }
+
+/**
+ * @generated from message depot.cloud.v3.ShutdownRequest
+ */
+export class ShutdownRequest extends Message<ShutdownRequest> {
+  constructor(data?: PartialMessage<ShutdownRequest>) {
+    super()
+    proto3.util.initPartial(data, this)
+  }
+
+  static readonly runtime: typeof proto3 = proto3
+  static readonly typeName = 'depot.cloud.v3.ShutdownRequest'
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [])
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ShutdownRequest {
+    return new ShutdownRequest().fromBinary(bytes, options)
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ShutdownRequest {
+    return new ShutdownRequest().fromJson(jsonValue, options)
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ShutdownRequest {
+    return new ShutdownRequest().fromJsonString(jsonString, options)
+  }
+
+  static equals(
+    a: ShutdownRequest | PlainMessage<ShutdownRequest> | undefined,
+    b: ShutdownRequest | PlainMessage<ShutdownRequest> | undefined,
+  ): boolean {
+    return proto3.util.equals(ShutdownRequest, a, b)
+  }
+}
+
+/**
+ * @generated from message depot.cloud.v3.ShutdownResponse
+ */
+export class ShutdownResponse extends Message<ShutdownResponse> {
+  constructor(data?: PartialMessage<ShutdownResponse>) {
+    super()
+    proto3.util.initPartial(data, this)
+  }
+
+  static readonly runtime: typeof proto3 = proto3
+  static readonly typeName = 'depot.cloud.v3.ShutdownResponse'
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [])
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ShutdownResponse {
+    return new ShutdownResponse().fromBinary(bytes, options)
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ShutdownResponse {
+    return new ShutdownResponse().fromJson(jsonValue, options)
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ShutdownResponse {
+    return new ShutdownResponse().fromJsonString(jsonString, options)
+  }
+
+  static equals(
+    a: ShutdownResponse | PlainMessage<ShutdownResponse> | undefined,
+    b: ShutdownResponse | PlainMessage<ShutdownResponse> | undefined,
+  ): boolean {
+    return proto3.util.equals(ShutdownResponse, a, b)
+  }
+}

@@ -2,13 +2,14 @@ import {isAbortError} from 'abort-controller-x'
 import {execa} from 'execa'
 import * as fsp from 'fs/promises'
 import {onShutdown, onShutdownError} from 'node-graceful-shutdown'
-import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v3/machine_pb'
+import {RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {pathExists} from '../utils/common'
-import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
+import {ensureMounted, mountExecutor} from '../utils/mounts'
 import {reportHealth} from './health'
+import {ShutdownBuildkit} from './shutdown'
 import {reportUsage} from './usage'
 
-export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
+export async function startBuildKit(token: string, machineId: string, task: RegisterMachineResponse_BuildKitTask) {
   console.log('Starting BuildKit')
 
   // Attempt to set up binfmt
@@ -47,7 +48,6 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
     })
   } catch {}
 
-  const {machineId, token} = message
   const headers = {Authorization: `Bearer ${token}`}
 
   await fsp.writeFile('/etc/buildkit/tls.crt', task.cert!.cert, {mode: 0o644})
@@ -207,9 +207,13 @@ keepBytes = ${cacheSizeBytes}
     } catch (error) {
       if (error instanceof Error && error.message.includes('Command failed with exit code 1')) {
         // Ignore this error, it's expected when the process is killed.
+      } else if (error instanceof Error && error.message.includes('Command failed with exit code 2')) {
+        // Exit code 2 is a panic in the go runtime (at least in go <= 1.23).
+        console.error(`BuildKit exited with panic: ${error}`)
       } else if (isAbortError(error)) {
         // Ignore this error, it's expected when the process is killed.
       } else {
+        // Unknown error.
         throw error
       }
     } finally {
@@ -217,12 +221,34 @@ keepBytes = ${cacheSizeBytes}
     }
   }
 
-  const buildkit = runBuildKit()
+  const build = async () => {
+    try {
+      await Promise.allSettled([
+        runBuildKit(),
+        reportHealth({controller, headers, path: rootDir}),
+        reportUsage({machineId, signal, headers}),
+      ])
+      console.log('BuildKit exited')
+    } catch (error) {
+      console.error(`BuildKit exited with error: ${error}`)
+    }
+
+    try {
+      await ShutdownBuildkit(rootDir, task.mounts)
+    } catch (error) {
+      console.error(`Error shutting down: ${error}`)
+    }
+  }
+  const run = build()
 
   onShutdownError(async (error) => {
-    console.error('Error shutting down:', error)
+    console.error(`Error shutting down: ${error}`)
   })
 
+  // onShutdown handles SIGINT and SIGTERM signals. We would receive these signals
+  // from systemd when the machine is told to turn off.
+  //
+  // We will not ever be restarted, so, we ignore the exit code for buildkit.
   onShutdown(async () => {
     setTimeout(() => {
       console.log('Shutdown timed out, killing process')
@@ -230,48 +256,8 @@ keepBytes = ${cacheSizeBytes}
     }, 1000 * 60).unref()
 
     controller.abort()
-    try {
-      await buildkit
-      console.log('BuildKit exited')
-    } catch (error) {
-      console.log(`BuildKit exited with error: ${error}`)
-    }
-
-    // Remove estargz cache because we will rely on the buildkit layer cache instead.
-    await execa('rm', ['-rf', `${rootDir}/runc-stargz/snapshots/stargz`], {stdio: 'inherit'}).catch((err) => {
-      console.error(err)
-    })
-
-    // Print the time it takes to sync the filesystem.
-    const start = Date.now()
-    // sync the filesystem to ensure all data is written to disk.
-    await execa('sync', {stdio: 'inherit'}).catch((err) => {
-      console.error(err)
-    })
-    console.log(`sync took ${Date.now() - start}ms`)
-
-    for (const mount of task.mounts) {
-      if (mount.cephVolume) {
-        if (!task.disableFstrim) {
-          await fstrim(mount.path)
-        }
-        await unmountDevice(mount.path)
-        await unmapBlockDevice(mount.cephVolume.volumeName, mount.cephVolume.imageSpec)
-      } else {
-        await unmountDevice(mount.path)
-      }
-    }
+    await run
   })
 
-  try {
-    await Promise.all([
-      buildkit,
-      reportHealth({signal, headers, path: rootDir}),
-      reportUsage({machineId, signal, headers}),
-    ])
-  } catch (error) {
-    throw error
-  } finally {
-    controller.abort()
-  }
+  await run
 }
