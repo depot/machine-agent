@@ -294,13 +294,6 @@ async function shutdown(rootDir: string, task: RegisterMachineResponse_BuildKitT
 }
 
 async function reportShutdown() {
-  const controller = new AbortController()
-  const signal = controller.signal
-
-  const shutdown = client.shutdown({}, {signal})
-
-  const timeout = 5000
-  const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-  return shutdown.finally(() => clearTimeout(timeoutId))
+  const signal = AbortSignal.timeout(5000)
+  return await client.shutdown({}, {signal})
 }
