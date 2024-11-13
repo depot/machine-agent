@@ -1,4 +1,5 @@
 import {PlainMessage} from '@bufbuild/protobuf'
+import {isAbortError} from 'abort-controller-x'
 import {execa} from 'execa'
 import {DiskSpace} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {sleep} from '../utils/common'
@@ -6,12 +7,14 @@ import {stats} from '../utils/disk'
 import {client} from '../utils/grpc'
 
 export interface ReportHealthParams {
-  signal: AbortSignal
+  controller: AbortController
   headers: HeadersInit
   path: string
 }
 
-export async function reportHealth({signal, headers, path}: ReportHealthParams) {
+export async function reportHealth({controller, headers, path}: ReportHealthParams) {
+  const signal = controller.signal
+
   while (!signal.aborted) {
     await waitForBuildKitWorkers(signal)
 
@@ -34,9 +37,16 @@ export async function reportHealth({signal, headers, path}: ReportHealthParams) 
       }
 
       const res = await client.reportMachineHealth(stream(), {headers, signal})
-      if (res.shouldTerminate) return
+      if (res.shouldTerminate) {
+        console.log('shutdown requested')
+        controller.abort()
+
+        return
+      }
     } catch (error) {
-      console.log('Error reporting health:', error)
+      if (!isAbortError(error)) {
+        console.log('Error reporting health:', error)
+      }
     }
     await sleep(1000)
   }

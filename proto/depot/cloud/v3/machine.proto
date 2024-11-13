@@ -7,6 +7,7 @@ service MachineService {
   rpc PingMachineHealth(PingMachineHealthRequest) returns (PingMachineHealthResponse);
   rpc ReportMachineHealth(stream ReportMachineHealthRequest) returns (ReportMachineHealthResponse);
   rpc Usage(UsageRequest) returns (UsageResponse);
+  rpc Shutdown(ShutdownRequest) returns (ShutdownResponse);
 }
 
 message RegisterMachineRequest {
@@ -159,3 +160,6 @@ message Cache {
 }
 
 message UsageResponse {}
+
+message ShutdownRequest {}
+message ShutdownResponse {}
