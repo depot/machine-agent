@@ -241,7 +241,7 @@ keepBytes = ${cacheSizeBytes}
       console.log(`BuildKit exited with error: ${error}`)
     }
 
-    await shutdown(rootDir, task)
+    await shutdown(rootDir, task, headers)
   })
 
   try {
@@ -255,7 +255,7 @@ keepBytes = ${cacheSizeBytes}
     }
 
     // If we have successfully stopped buildkit, we can shutdown.
-    await shutdown(rootDir, task)
+    await shutdown(rootDir, task, headers)
   } catch (error) {
     throw error
   } finally {
@@ -263,7 +263,7 @@ keepBytes = ${cacheSizeBytes}
   }
 }
 
-async function shutdown(rootDir: string, task: RegisterMachineResponse_BuildKitTask) {
+async function shutdown(rootDir: string, task: RegisterMachineResponse_BuildKitTask, headers: HeadersInit) {
   // Remove estargz cache because we will rely on the buildkit layer cache instead.
   await execa('rm', ['-rf', `${rootDir}/runc-stargz/snapshots/stargz`], {stdio: 'inherit'}).catch((err) => {
     console.error(err)
@@ -290,10 +290,10 @@ async function shutdown(rootDir: string, task: RegisterMachineResponse_BuildKitT
   }
 
   // Report shutdown to the API to indicate that the machine is no longer available.
-  await reportShutdown()
+  await reportShutdown(headers)
 }
 
-async function reportShutdown() {
+async function reportShutdown(headers: HeadersInit) {
   const signal = AbortSignal.timeout(5000)
-  return await client.shutdown({}, {signal})
+  return await client.shutdown({}, {headers, signal})
 }
