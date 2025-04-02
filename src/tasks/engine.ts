@@ -23,7 +23,8 @@ export async function startEngine(message: RegisterMachineResponse, task: Regist
   await fsp.writeFile('/etc/engine/tls.key', task.cert!.key, {mode: 0o644})
   await fsp.writeFile('/etc/engine/tlsca.crt', task.caCert!.cert, {mode: 0o644})
 
-  const cacheSizeMB = task.cacheSize * 1000000
+  // cacheSize is in GB
+  const cacheSizeMB = task.cacheSize * 1000
 
   const args = [
     'run',
