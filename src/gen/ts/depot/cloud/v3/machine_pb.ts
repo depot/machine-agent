@@ -42,6 +42,11 @@ export class RegisterMachineRequest extends Message<RegisterMachineRequest> {
       }
     | {case: undefined; value?: undefined} = {case: undefined}
 
+  /**
+   * @generated from field: optional string public_ip = 4;
+   */
+  publicIp?: string
+
   constructor(data?: PartialMessage<RegisterMachineRequest>) {
     super()
     proto3.util.initPartial(data, this)
@@ -53,6 +58,7 @@ export class RegisterMachineRequest extends Message<RegisterMachineRequest> {
     {no: 1, name: 'connection_id', kind: 'scalar', T: 9 /* ScalarType.STRING */},
     {no: 2, name: 'aws', kind: 'message', T: RegisterMachineRequest_AWSRegistration, oneof: 'cloud'},
     {no: 3, name: 'fly', kind: 'message', T: RegisterMachineRequest_FlyRegistration, oneof: 'cloud'},
+    {no: 4, name: 'public_ip', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineRequest {
@@ -574,6 +580,21 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
    */
   enableGpu?: boolean
 
+  /**
+   * @generated from field: optional depot.cloud.v3.RegisterMachineResponse.TailscaleConfig tailscale_config = 22;
+   */
+  tailscaleConfig?: RegisterMachineResponse_TailscaleConfig
+
+  /**
+   * @generated from field: optional depot.cloud.v3.RegisterMachineResponse.BuildKitTask.Snapshotter snapshotter = 23;
+   */
+  snapshotter?: RegisterMachineResponse_BuildKitTask_Snapshotter
+
+  /**
+   * @generated from field: optional string additional_buildkitd_config = 24;
+   */
+  additionalBuildkitdConfig?: string
+
   constructor(data?: PartialMessage<RegisterMachineResponse_BuildKitTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -602,6 +623,15 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
     {no: 19, name: 'enable_cni', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
     {no: 20, name: 'use_buildkit_private', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
     {no: 21, name: 'enable_gpu', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
+    {no: 22, name: 'tailscale_config', kind: 'message', T: RegisterMachineResponse_TailscaleConfig, opt: true},
+    {
+      no: 23,
+      name: 'snapshotter',
+      kind: 'enum',
+      T: proto3.getEnumType(RegisterMachineResponse_BuildKitTask_Snapshotter),
+      opt: true,
+    },
+    {no: 24, name: 'additional_buildkitd_config', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_BuildKitTask {
@@ -623,6 +653,39 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
     return proto3.util.equals(RegisterMachineResponse_BuildKitTask, a, b)
   }
 }
+
+/**
+ * Snapshotter is the snapshotter to use for buildkit.
+ * By default it will use TYPE_STARGZ if unspecified.
+ *
+ * @generated from enum depot.cloud.v3.RegisterMachineResponse.BuildKitTask.Snapshotter
+ */
+export enum RegisterMachineResponse_BuildKitTask_Snapshotter {
+  /**
+   * @generated from enum value: SNAPSHOTTER_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: SNAPSHOTTER_STARGZ = 1;
+   */
+  STARGZ = 1,
+
+  /**
+   * @generated from enum value: SNAPSHOTTER_OVERLAYFS = 2;
+   */
+  OVERLAYFS = 2,
+}
+// Retrieve enum metadata with: proto3.getEnumType(RegisterMachineResponse_BuildKitTask_Snapshotter)
+proto3.util.setEnumType(
+  RegisterMachineResponse_BuildKitTask_Snapshotter,
+  'depot.cloud.v3.RegisterMachineResponse.BuildKitTask.Snapshotter',
+  [
+    {no: 0, name: 'SNAPSHOTTER_UNSPECIFIED'},
+    {no: 1, name: 'SNAPSHOTTER_STARGZ'},
+    {no: 2, name: 'SNAPSHOTTER_OVERLAYFS'},
+  ],
+)
 
 /**
  * EngineTask represents an instruction to start an engine daemon
@@ -660,6 +723,16 @@ export class RegisterMachineResponse_EngineTask extends Message<RegisterMachineR
    */
   cacheSize = 0
 
+  /**
+   * @generated from field: optional string vector_config = 7;
+   */
+  vectorConfig?: string
+
+  /**
+   * @generated from field: optional depot.cloud.v3.RegisterMachineResponse.TailscaleConfig tailscale_config = 8;
+   */
+  tailscaleConfig?: RegisterMachineResponse_TailscaleConfig
+
   constructor(data?: PartialMessage<RegisterMachineResponse_EngineTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -674,6 +747,8 @@ export class RegisterMachineResponse_EngineTask extends Message<RegisterMachineR
     {no: 4, name: 'ca_cert', kind: 'message', T: Cert},
     {no: 5, name: 'mounts', kind: 'message', T: RegisterMachineResponse_Mount, repeated: true},
     {no: 6, name: 'cache_size', kind: 'scalar', T: 5 /* ScalarType.INT32 */},
+    {no: 7, name: 'vector_config', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
+    {no: 8, name: 'tailscale_config', kind: 'message', T: RegisterMachineResponse_TailscaleConfig, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_EngineTask {
@@ -747,6 +822,61 @@ export class RegisterMachineResponse_Profiler extends Message<RegisterMachineRes
     b: RegisterMachineResponse_Profiler | PlainMessage<RegisterMachineResponse_Profiler> | undefined,
   ): boolean {
     return proto3.util.equals(RegisterMachineResponse_Profiler, a, b)
+  }
+}
+
+/**
+ * @generated from message depot.cloud.v3.RegisterMachineResponse.TailscaleConfig
+ */
+export class RegisterMachineResponse_TailscaleConfig extends Message<RegisterMachineResponse_TailscaleConfig> {
+  /**
+   * @generated from field: string auth_key = 1;
+   */
+  authKey = ''
+
+  /**
+   * @generated from field: repeated string tags = 2;
+   */
+  tags: string[] = []
+
+  /**
+   * @generated from field: string hostname = 3;
+   */
+  hostname = ''
+
+  constructor(data?: PartialMessage<RegisterMachineResponse_TailscaleConfig>) {
+    super()
+    proto3.util.initPartial(data, this)
+  }
+
+  static readonly runtime: typeof proto3 = proto3
+  static readonly typeName = 'depot.cloud.v3.RegisterMachineResponse.TailscaleConfig'
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    {no: 1, name: 'auth_key', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+    {no: 2, name: 'tags', kind: 'scalar', T: 9 /* ScalarType.STRING */, repeated: true},
+    {no: 3, name: 'hostname', kind: 'scalar', T: 9 /* ScalarType.STRING */},
+  ])
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_TailscaleConfig {
+    return new RegisterMachineResponse_TailscaleConfig().fromBinary(bytes, options)
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RegisterMachineResponse_TailscaleConfig {
+    return new RegisterMachineResponse_TailscaleConfig().fromJson(jsonValue, options)
+  }
+
+  static fromJsonString(
+    jsonString: string,
+    options?: Partial<JsonReadOptions>,
+  ): RegisterMachineResponse_TailscaleConfig {
+    return new RegisterMachineResponse_TailscaleConfig().fromJsonString(jsonString, options)
+  }
+
+  static equals(
+    a: RegisterMachineResponse_TailscaleConfig | PlainMessage<RegisterMachineResponse_TailscaleConfig> | undefined,
+    b: RegisterMachineResponse_TailscaleConfig | PlainMessage<RegisterMachineResponse_TailscaleConfig> | undefined,
+  ): boolean {
+    return proto3.util.equals(RegisterMachineResponse_TailscaleConfig, a, b)
   }
 }
 
