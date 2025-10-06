@@ -105,6 +105,8 @@ keepDuration = 1209600 # 14 days: 3600 * 24 * 14
 [[worker.oci.gcpolicy]]
 all = true
 keepBytes = ${cacheSizeBytes}
+
+${task.additionalBuildkitdConfig || ''}
 `
   await fsp.writeFile('/etc/buildkit/buildkitd.toml', config, {mode: 0o644})
 

@@ -16,6 +16,7 @@ message RegisterMachineRequest {
     AWSRegistration aws = 2;
     FlyRegistration fly = 3;
   }
+  optional string public_ip = 4;
 
   message AWSRegistration {
     string document = 1;
@@ -98,6 +99,18 @@ message RegisterMachineResponse {
     optional bool enable_cni = 19;
     optional bool use_buildkit_private = 20;
     optional bool enable_gpu = 21;
+    optional TailscaleConfig tailscale_config = 22;
+
+    // Snapshotter is the snapshotter to use for buildkit.
+    // By default it will use TYPE_STARGZ if unspecified.
+    enum Snapshotter {
+      SNAPSHOTTER_UNSPECIFIED = 0;
+      SNAPSHOTTER_STARGZ = 1;
+      SNAPSHOTTER_OVERLAYFS = 2;
+    }
+
+    optional Snapshotter snapshotter = 23;
+    optional string additional_buildkitd_config = 24;
   }
 
   // EngineTask represents an instruction to start an engine daemon
@@ -108,6 +121,8 @@ message RegisterMachineResponse {
     Cert ca_cert = 4;
     repeated Mount mounts = 5;
     int32 cache_size = 6;
+    optional string vector_config = 7;
+    optional TailscaleConfig tailscale_config = 8;
   }
 
   // Specifies sending buildkit profiling data to a remote endpoint.
@@ -115,6 +130,12 @@ message RegisterMachineResponse {
     string endpoint = 1;
     string token = 2;
     string project_id = 3;
+  }
+
+  message TailscaleConfig {
+    string auth_key = 1;
+    repeated string tags = 2;
+    string hostname = 3;
   }
 }
 
