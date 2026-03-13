@@ -595,6 +595,39 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
    */
   additionalBuildkitdConfig?: string
 
+  /**
+   * @generated from field: optional bool enable_buildkit_gc_walk_results = 25;
+   */
+  enableBuildkitGcWalkResults?: boolean
+
+  /**
+   * URL to get a specific buildkit binary.
+   * Useful for trying out new buildkit versions.
+   *
+   * @generated from field: optional string buildkit_url = 26;
+   */
+  buildkitUrl?: string
+
+  /**
+   * @generated from field: optional bool enable_sqlite_metadata = 27;
+   */
+  enableSqliteMetadata?: boolean
+
+  /**
+   * OpenTelemetry Collector config for host metrics (CPU, memory, OOM detection)
+   *
+   * @generated from field: optional string otelcol_config = 28;
+   */
+  otelcolConfig?: string
+
+  /**
+   * Cache backend to use for the buildkit cache.
+   * By default it will use CACHE_BACKEND_BOLT if unspecified.
+   *
+   * @generated from field: optional depot.cloud.v3.RegisterMachineResponse.BuildKitTask.CacheBackend cache_backend = 29;
+   */
+  cacheBackend?: RegisterMachineResponse_BuildKitTask_CacheBackend
+
   constructor(data?: PartialMessage<RegisterMachineResponse_BuildKitTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -632,6 +665,17 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
       opt: true,
     },
     {no: 24, name: 'additional_buildkitd_config', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
+    {no: 25, name: 'enable_buildkit_gc_walk_results', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
+    {no: 26, name: 'buildkit_url', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
+    {no: 27, name: 'enable_sqlite_metadata', kind: 'scalar', T: 8 /* ScalarType.BOOL */, opt: true},
+    {no: 28, name: 'otelcol_config', kind: 'scalar', T: 9 /* ScalarType.STRING */, opt: true},
+    {
+      no: 29,
+      name: 'cache_backend',
+      kind: 'enum',
+      T: proto3.getEnumType(RegisterMachineResponse_BuildKitTask_CacheBackend),
+      opt: true,
+    },
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_BuildKitTask {
@@ -684,6 +728,36 @@ proto3.util.setEnumType(
     {no: 0, name: 'SNAPSHOTTER_UNSPECIFIED'},
     {no: 1, name: 'SNAPSHOTTER_STARGZ'},
     {no: 2, name: 'SNAPSHOTTER_OVERLAYFS'},
+  ],
+)
+
+/**
+ * @generated from enum depot.cloud.v3.RegisterMachineResponse.BuildKitTask.CacheBackend
+ */
+export enum RegisterMachineResponse_BuildKitTask_CacheBackend {
+  /**
+   * @generated from enum value: CACHE_BACKEND_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: CACHE_BACKEND_BOLT = 1;
+   */
+  BOLT = 1,
+
+  /**
+   * @generated from enum value: CACHE_BACKEND_SQLITE = 2;
+   */
+  SQLITE = 2,
+}
+// Retrieve enum metadata with: proto3.getEnumType(RegisterMachineResponse_BuildKitTask_CacheBackend)
+proto3.util.setEnumType(
+  RegisterMachineResponse_BuildKitTask_CacheBackend,
+  'depot.cloud.v3.RegisterMachineResponse.BuildKitTask.CacheBackend',
+  [
+    {no: 0, name: 'CACHE_BACKEND_UNSPECIFIED'},
+    {no: 1, name: 'CACHE_BACKEND_BOLT'},
+    {no: 2, name: 'CACHE_BACKEND_SQLITE'},
   ],
 )
 

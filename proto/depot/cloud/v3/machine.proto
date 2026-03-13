@@ -111,6 +111,21 @@ message RegisterMachineResponse {
 
     optional Snapshotter snapshotter = 23;
     optional string additional_buildkitd_config = 24;
+    optional bool enable_buildkit_gc_walk_results = 25;
+    // URL to get a specific buildkit binary.
+    // Useful for trying out new buildkit versions.
+    optional string buildkit_url = 26;
+    optional bool enable_sqlite_metadata = 27;
+    // OpenTelemetry Collector config for host metrics (CPU, memory, OOM detection)
+    optional string otelcol_config = 28;
+    enum CacheBackend {
+      CACHE_BACKEND_UNSPECIFIED = 0;
+      CACHE_BACKEND_BOLT = 1;
+      CACHE_BACKEND_SQLITE = 2;
+    }
+    // Cache backend to use for the buildkit cache.
+    // By default it will use CACHE_BACKEND_BOLT if unspecified.
+    optional CacheBackend cache_backend = 29;
   }
 
   // EngineTask represents an instruction to start an engine daemon
