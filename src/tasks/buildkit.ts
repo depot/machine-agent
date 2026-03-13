@@ -2,7 +2,11 @@ import {isAbortError} from 'abort-controller-x'
 import {execa} from 'execa'
 import * as fsp from 'fs/promises'
 import {onShutdown, onShutdownError} from 'node-graceful-shutdown'
-import {RegisterMachineResponse, RegisterMachineResponse_BuildKitTask} from '../gen/ts/depot/cloud/v3/machine_pb'
+import {
+  RegisterMachineResponse,
+  RegisterMachineResponse_BuildKitTask,
+  RegisterMachineResponse_BuildKitTask_CacheBackend,
+} from '../gen/ts/depot/cloud/v3/machine_pb'
 import {pathExists} from '../utils/common'
 import {client} from '../utils/grpc'
 import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
@@ -199,6 +203,16 @@ ${task.additionalBuildkitdConfig || ''}
   if (task.enableGpu) {
     console.log('Enabling GPU')
     env.DEPOT_ENABLE_GPU = 'true'
+  }
+
+  if (task.enableSqliteMetadata) {
+    console.log('Enabling sqlite metadata')
+    env.DEPOT_SQLITE_METADATA = '1'
+  }
+
+  if (task.cacheBackend === RegisterMachineResponse_BuildKitTask_CacheBackend.SQLITE) {
+    console.log('Enabling sqlite cache')
+    env.DEPOT_CACHE_DB_BACKEND = 'sqlite'
   }
 
   const args = task.enableDebugLogging ? ['--debug'] : []
