@@ -217,6 +217,20 @@ ${task.additionalBuildkitdConfig || ''}
 
   const args = task.enableDebugLogging ? ['--debug'] : []
 
+  // Make this agent — and the buildkitd it spawns, which inherits the value —
+  // immune to the kernel OOM killer (-1000). When a RUN step exhausts memory the
+  // kernel should reap the build step (buildkit biases steps positive via
+  // oomScoreAdj), never buildkitd or this agent, so a parent always survives to
+  // report the death instead of the whole build interaction hanging. The agent
+  // runs as root, so the negative adjustment is permitted; best-effort so a
+  // non-Linux/dev environment without /proc doesn't fail the task.
+  try {
+    await fsp.writeFile('/proc/self/oom_score_adj', '-1000')
+    console.log('Set agent oom_score_adj to -1000 (buildkitd inherits)')
+  } catch (error) {
+    console.error(`Failed to set oom_score_adj, continuing: ${error}`)
+  }
+
   async function runBuildKit() {
     try {
       console.log('Execing BuildKit')
