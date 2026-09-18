@@ -10,6 +10,7 @@ import {DEPOT_CLOUD, DEPOT_CLOUD_CONNECTION_ID, DEPOT_MACHINE_AGENT_VERSION} fro
 import {getFlyToken} from './utils/fly'
 import {client} from './utils/grpc'
 import {getBase64Signature, getInstanceIdentityDocument} from './utils/imds'
+import {DeviceWaitTimeoutError} from './utils/mounts'
 
 Sentry.init({
   dsn: 'https://1b42edcd994c4c9398034d91ced602f0@o1152282.ingest.sentry.io/4504141762920448',
@@ -30,6 +31,7 @@ async function main() {
       await runLoop()
       done = true
     } catch (err) {
+      if (err instanceof DeviceWaitTimeoutError) throw err
       Sentry.captureException(err)
       console.log(err)
       await sleep(1000)

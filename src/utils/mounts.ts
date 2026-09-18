@@ -9,6 +9,13 @@ import {sleep} from './common'
 const DEVICE_POLL_INTERVAL_MS = 500
 export const DEVICE_WAIT_TIMEOUT_MS = 120_000
 
+export class DeviceWaitTimeoutError extends Error {
+  constructor(device: string, timeoutMs: number) {
+    super(`device ${device} did not appear within ${timeoutMs}ms`)
+    this.name = 'DeviceWaitTimeoutError'
+  }
+}
+
 export async function ensureMounted(
   device: string,
   path: string,
@@ -206,7 +213,7 @@ export async function waitForDevice(
     }
   }
 
-  throw new Error(`device ${device} did not appear within ${timeoutMs}ms`)
+  throw new DeviceWaitTimeoutError(device, timeoutMs)
 }
 
 // Creates the ceph.conf and ceph.client.keyring files.

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict')
 const fsp = require('node:fs/promises')
 const {mock, test} = require('node:test')
-const {waitForDevice} = require('./mounts.ts')
+const {DeviceWaitTimeoutError, waitForDevice} = require('./mounts.ts')
 
 test('waitForDevice yields and rejects when a device stays missing', {timeout: 1_000}, async () => {
   const log = mock.method(console, 'log', () => {})
@@ -12,9 +12,12 @@ test('waitForDevice yields and rejects when a device stays missing', {timeout: 1
   const startedAt = Date.now()
 
   try {
-    await assert.rejects(waitForDevice('/dev/missing', timeoutMs), {
-      message: `device /dev/missing did not appear within ${timeoutMs}ms`,
-    })
+    await assert.rejects(
+      waitForDevice('/dev/missing', timeoutMs),
+      (error) =>
+        error instanceof DeviceWaitTimeoutError &&
+        error.message === `device /dev/missing did not appear within ${timeoutMs}ms`,
+    )
   } finally {
     stat.mock.restore()
     log.mock.restore()
