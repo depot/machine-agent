@@ -6,6 +6,16 @@ import {
 } from '../gen/ts/depot/cloud/v3/machine_pb'
 import {sleep} from './common'
 
+const DEVICE_POLL_INTERVAL_MS = 500
+export const DEVICE_WAIT_TIMEOUT_MS = 120_000
+
+export class DeviceWaitTimeoutError extends Error {
+  constructor(device: string, timeoutMs: number) {
+    super(`device ${device} did not appear within ${timeoutMs}ms`)
+    this.name = 'DeviceWaitTimeoutError'
+  }
+}
+
 export async function ensureMounted(
   device: string,
   path: string,
@@ -179,17 +189,31 @@ export async function mountExecutor(rootDir: string) {
   await execa('mount', ['--bind', '/mnt/executor', `${rootDir}/runc-stargz/executor`], {stdio: 'inherit'})
 }
 
-async function waitForDevice(device: string) {
-  while (true) {
+export async function waitForDevice(
+  device: string,
+  timeoutMs = Number(process.env.DEPOT_DEVICE_WAIT_TIMEOUT_MS ?? DEVICE_WAIT_TIMEOUT_MS),
+) {
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    throw new Error(`device wait timeout must be a positive number, got ${timeoutMs}ms`)
+  }
+
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    console.log(`Waiting for ${device} to exist`)
     try {
-      console.log(`Waiting for ${device} to exist`)
       const stat = await fsp.stat(device)
       if (stat.isBlockDevice()) return
-      await sleep(500)
     } catch (err: any) {
       if (err.code !== 'ENOENT') throw err
     }
+
+    const remainingMs = deadline - Date.now()
+    if (remainingMs > 0) {
+      await sleep(Math.min(DEVICE_POLL_INTERVAL_MS, remainingMs))
+    }
   }
+
+  throw new DeviceWaitTimeoutError(device, timeoutMs)
 }
 
 // Creates the ceph.conf and ceph.client.keyring files.
