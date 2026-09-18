@@ -70,7 +70,10 @@ async function runLoop() {
       if (message.task.case === 'engine') await startEngine(message, message.task.value)
     }
   } catch (err) {
-    if (err instanceof ConnectError && err.code === Code.Internal && err.message.includes('RST_STREAM')) {
+    if (err instanceof ConnectError && err.code === Code.NotFound) {
+      console.log('Machine not found in control plane, shutting down')
+      return
+    } else if (err instanceof ConnectError && err.code === Code.Internal && err.message.includes('RST_STREAM')) {
       console.log('Connection closed by server')
     } else {
       throw err
