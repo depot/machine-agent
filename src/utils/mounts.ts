@@ -6,6 +6,20 @@ import {
 } from '../gen/ts/depot/cloud/v3/machine_pb'
 import {sleep} from './common'
 
+const DEVICE_MOUNT_RETRY_BACKOFF_MS = 1000
+const DEVICE_MOUNT_TIMEOUT_MS = 120_000
+
+export class DeviceMountError extends Error {
+  constructor(
+    public readonly device: string,
+    public readonly path: string,
+    public readonly lastStderr: string,
+  ) {
+    super(`Failed to mount ${device} at ${path}: ${lastStderr}`)
+    this.name = 'DeviceMountError'
+  }
+}
+
 export async function ensureMounted(
   device: string,
   path: string,
@@ -101,6 +115,11 @@ async function mountDevice(
   fstype: RegisterMachineResponse_Mount_FilesystemType,
   options: string | undefined,
 ) {
+  const timeoutMs = Number(process.env.DEPOT_DEVICE_MOUNT_TIMEOUT_MS ?? DEVICE_MOUNT_TIMEOUT_MS)
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    throw new DeviceMountError(device, path, `invalid DEPOT_DEVICE_MOUNT_TIMEOUT_MS: ${timeoutMs}`)
+  }
+
   const types =
     fstype === RegisterMachineResponse_Mount_FilesystemType.EXT4
       ? ['ext4', 'xfs', 'btrfs']
@@ -108,15 +127,47 @@ async function mountDevice(
       ? ['xfs', 'ext4', 'btrfs']
       : ['btrfs', 'xfs', 'ext4']
 
-  for (const type of types) {
-    try {
-      await execa('mount', ['-t', type, '-o', options || 'defaults', device, path], {stdio: 'inherit'})
-      console.log(`Mounted ${device} at ${path}`)
-      return
-    } catch {}
+  const deadline = Date.now() + timeoutMs
+  let lastStderr = ''
+
+  while (Date.now() < deadline) {
+    for (const type of types) {
+      try {
+        const remainingMs = Math.max(1, deadline - Date.now())
+        const result = await execa('mount', ['-t', type, '-o', options || 'defaults', device, path], {
+          reject: false,
+          timeout: remainingMs,
+        })
+        lastStderr = result.stderr
+        if (result.exitCode === 0) {
+          console.log(`Mounted ${device} at ${path}`)
+          return
+        }
+      } catch (error) {
+        lastStderr = mountErrorStderr(error)
+      }
+
+      console.error(`Failed to mount ${device} at ${path} as ${type}: ${lastStderr}`)
+      if (Date.now() >= deadline) {
+        throw new DeviceMountError(device, path, lastStderr)
+      }
+    }
+
+    const remainingMs = deadline - Date.now()
+    if (remainingMs > 0) {
+      await sleep(Math.min(DEVICE_MOUNT_RETRY_BACKOFF_MS, remainingMs))
+    }
   }
 
-  throw new Error(`Failed to mount ${device} at ${path}`)
+  throw new DeviceMountError(device, path, lastStderr)
+}
+
+function mountErrorStderr(error: unknown): string {
+  if (typeof error === 'object' && error !== null && 'stderr' in error) {
+    const {stderr} = error as {stderr?: unknown}
+    if (typeof stderr === 'string') return stderr
+  }
+  return error instanceof Error ? error.message : String(error)
 }
 
 // Unmounts device at path.  If the device is not mounted, this is a no-op.
