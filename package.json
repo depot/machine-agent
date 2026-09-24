@@ -10,6 +10,7 @@
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
     "generate": "buf generate && prettier --write src/gen",
+    "test": "esbuild --bundle --outfile=dist/registerRetry.test.cjs --platform=node --target=node18 src/registerRetry.test.ts && node --test dist/registerRetry.test.cjs",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
