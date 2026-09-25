@@ -3,6 +3,7 @@ import {Code, ConnectError} from '@connectrpc/connect'
 import * as Sentry from '@sentry/node'
 import {execa} from 'execa'
 import {RegisterMachineRequest} from './gen/ts/depot/cloud/v3/machine_pb'
+import {runRegisterLoopWithRetry} from './registerRetry'
 import {startBuildKit} from './tasks/buildkit'
 import {startEngine} from './tasks/engine'
 import {promises, sleep} from './utils/common'
@@ -24,17 +25,12 @@ async function main() {
 
   void prepareCeph()
 
-  let done = false
-  while (!done) {
-    try {
-      await runLoop()
-      done = true
-    } catch (err) {
-      Sentry.captureException(err)
-      console.log(err)
-      await sleep(1000)
-    }
-  }
+  await runRegisterLoopWithRetry({
+    runLoop,
+    captureException: (error) => Sentry.captureException(error),
+    logError: (error) => console.log(error),
+    sleep,
+  })
 }
 
 async function runLoop() {
