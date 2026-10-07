@@ -628,6 +628,13 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
    */
   cacheBackend?: RegisterMachineResponse_BuildKitTask_CacheBackend
 
+  /**
+   * Age threshold in days for garbage collection of unused build cache. Default: 14.
+   *
+   * @generated from field: optional int32 cache_keep_days = 33;
+   */
+  cacheKeepDays?: number
+
   constructor(data?: PartialMessage<RegisterMachineResponse_BuildKitTask>) {
     super()
     proto3.util.initPartial(data, this)
@@ -676,6 +683,7 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
       T: proto3.getEnumType(RegisterMachineResponse_BuildKitTask_CacheBackend),
       opt: true,
     },
+    {no: 33, name: 'cache_keep_days', kind: 'scalar', T: 5 /* ScalarType.INT32 */, opt: true},
   ])
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RegisterMachineResponse_BuildKitTask {

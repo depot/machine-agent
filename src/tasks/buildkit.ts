@@ -61,6 +61,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
 
   const cacheSizeBytes = task.cacheSize * 1000000000
   const maxParallelism = task.maxParallelism > 0 ? task.maxParallelism : 12
+  const cacheKeepDays = task.cacheKeepDays && task.cacheKeepDays > 0 ? task.cacheKeepDays : 14
 
   const config = `
 root = "${rootDir}"
@@ -104,7 +105,7 @@ enabled = false
 
 [[worker.oci.gcpolicy]]
 all = true
-keepDuration = 1209600 # 14 days: 3600 * 24 * 14
+keepDuration = ${cacheKeepDays * 24 * 60 * 60}
 
 [[worker.oci.gcpolicy]]
 all = true
