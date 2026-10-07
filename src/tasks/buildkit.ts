@@ -10,6 +10,7 @@ import {
 import {pathExists} from '../utils/common'
 import {client} from '../utils/grpc'
 import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
+import {buildkitConfig} from './buildkitConfig'
 import {reportHealth} from './health'
 import {reportUsage} from './usage'
 
@@ -59,59 +60,7 @@ export async function startBuildKit(message: RegisterMachineResponse, task: Regi
   await fsp.writeFile('/etc/buildkit/tls.key', task.cert!.key, {mode: 0o644})
   await fsp.writeFile('/etc/buildkit/tlsca.crt', task.caCert!.cert, {mode: 0o644})
 
-  const cacheSizeBytes = task.cacheSize * 1000000000
-  const maxParallelism = task.maxParallelism > 0 ? task.maxParallelism : 12
-
-  const config = `
-root = "${rootDir}"
-
-[grpc]
-address = ["tcp://0.0.0.0:443", "unix:///run/buildkit/buildkitd.sock"]
-
-[grpc.tls]
-cert = "/etc/buildkit/tls.crt"
-key = "/etc/buildkit/tls.key"
-ca = "/etc/buildkit/tlsca.crt"
-
-[worker.oci]
-enabled = true
-gc = true
-gckeepstorage = ${cacheSizeBytes}
-max-parallelism = ${maxParallelism}
-snapshotter = "stargz"
-${task.enableCni ? 'cniConfigPath = "/etc/buildkit/cni.conflist"' : ''}
-
-[worker.oci.stargzSnapshotter]
-no_background_fetch = true
-noprefetch = true
-no_prometheus = true
-max_concurrency = 16
-
-[worker.oci.stargzSnapshotter.blob]
-chunk_size = 50000000 # 50 MB
-
-[worker.containerd]
-enabled = false
-
-# [[worker.oci.gcpolicy]]
-# keepBytes = 10240000000 # 10 GB
-# keepDuration = 604800 # 7 days: 3600 * 24 * 7
-# filters = [
-#   "type==source.local",
-#   "type==exec.cachemount",
-#   "type==source.git.checkout",
-# ]
-
-[[worker.oci.gcpolicy]]
-all = true
-keepDuration = 1209600 # 14 days: 3600 * 24 * 14
-
-[[worker.oci.gcpolicy]]
-all = true
-keepBytes = ${cacheSizeBytes}
-
-${task.additionalBuildkitdConfig || ''}
-`
+  const config = buildkitConfig(rootDir, task)
   await fsp.writeFile('/etc/buildkit/buildkitd.toml', config, {mode: 0o644})
 
   if (task.enableCni && !(await pathExists('/etc/buildkit/cni.conflist'))) {

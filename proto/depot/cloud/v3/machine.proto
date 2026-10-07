@@ -126,6 +126,8 @@ message RegisterMachineResponse {
     // Cache backend to use for the buildkit cache.
     // By default it will use CACHE_BACKEND_BOLT if unspecified.
     optional CacheBackend cache_backend = 29;
+    // Age threshold in days for garbage collection of unused build cache. Default: 14.
+    optional int32 cache_keep_days = 33;
   }
 
   // EngineTask represents an instruction to start an engine daemon
