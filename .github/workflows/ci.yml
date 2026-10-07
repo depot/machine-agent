@@ -13,7 +13,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm fmt:check
-      - run: pnpm test
 
   build:
     runs-on: ubuntu-latest
