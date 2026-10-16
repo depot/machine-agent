@@ -8,6 +8,7 @@ interface RegisterRetryOptions {
   runLoop: () => Promise<void>
   captureException: (error: unknown) => void
   logError: (error: unknown) => void
+  log?: (message: string) => void
   sleep: (milliseconds: number) => Promise<unknown>
   now?: () => number
 }
@@ -17,6 +18,7 @@ export async function runRegisterLoopWithRetry({
   captureException,
   logError,
   sleep,
+  log = console.log,
   now = Date.now,
 }: RegisterRetryOptions) {
   let consecutiveRegisterRejections = 0
@@ -27,6 +29,14 @@ export async function runRegisterLoopWithRetry({
       await runLoop()
       return
     } catch (error) {
+      if (isRegisterStreamClosedByServer(error)) {
+        consecutiveRegisterRejections = 0
+        lastRegisterRejectionReportAt = undefined
+        log('Connection closed by server')
+        await sleep(RETRY_DELAY_MS)
+        continue
+      }
+
       if (isMissingInstanceID(error)) {
         consecutiveRegisterRejections++
         const currentTime = now()
@@ -54,5 +64,13 @@ export async function runRegisterLoopWithRetry({
 function isMissingInstanceID(error: unknown) {
   return (
     error instanceof ConnectError && error.code === Code.InvalidArgument && error.rawMessage === 'Missing instance ID'
+  )
+}
+
+function isRegisterStreamClosedByServer(error: unknown) {
+  return (
+    error instanceof ConnectError &&
+    error.code === Code.Canceled &&
+    error.rawMessage.includes('http/2 stream closed with error code CANCEL')
   )
 }
