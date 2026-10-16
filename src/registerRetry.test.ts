@@ -100,3 +100,52 @@ test('resets the report threshold after a nonmatching failure', async () => {
   assert.equal(attempts, 40)
   assert.deepEqual(reports, [notFound])
 })
+
+const streamClosedByServer = () => new ConnectError('http/2 stream closed with error code CANCEL (0x8)', Code.Canceled)
+
+test('does not report register streams closed by the server and keeps retrying', async () => {
+  let attempts = 0
+  const reports: unknown[] = []
+  const logs: string[] = []
+  const errorLogs: unknown[] = []
+
+  await runRegisterLoopWithRetry({
+    runLoop: async () => {
+      attempts++
+      if (attempts <= 3) throw streamClosedByServer()
+    },
+    captureException: (error) => reports.push(error),
+    logError: (error) => errorLogs.push(error),
+    log: (message) => logs.push(message),
+    sleep: async () => {},
+  })
+
+  assert.equal(attempts, 4)
+  assert.equal(reports.length, 0)
+  assert.equal(errorLogs.length, 0)
+  assert.deepEqual(logs, ['Connection closed by server', 'Connection closed by server', 'Connection closed by server'])
+})
+
+test('reports canceled errors with other messages and other reset codes immediately', async () => {
+  let attempts = 0
+  const reports: unknown[] = []
+  const canceled = new ConnectError('operation was aborted', Code.Canceled)
+  const internalReset = new ConnectError('http/2 stream closed with error code INTERNAL_ERROR (0x2)', Code.Internal)
+  const unavailable = new ConnectError('PING timed out', Code.Unavailable)
+
+  await runRegisterLoopWithRetry({
+    runLoop: async () => {
+      attempts++
+      if (attempts === 1) throw canceled
+      if (attempts === 2) throw internalReset
+      if (attempts === 3) throw unavailable
+    },
+    captureException: (error) => reports.push(error),
+    logError: () => {},
+    log: () => {},
+    sleep: async () => {},
+  })
+
+  assert.equal(attempts, 4)
+  assert.deepEqual(reports, [canceled, internalReset, unavailable])
+})
