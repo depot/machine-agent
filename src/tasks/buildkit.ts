@@ -7,6 +7,7 @@ import {
   RegisterMachineResponse_BuildKitTask,
   RegisterMachineResponse_BuildKitTask_CacheBackend,
 } from '../gen/ts/depot/cloud/v3/machine_pb'
+import {registerQemuEmulators} from '../utils/binfmt'
 import {pathExists} from '../utils/common'
 import {client} from '../utils/grpc'
 import {ensureMounted, fstrim, mountExecutor, unmapBlockDevice, unmountDevice} from '../utils/mounts'
@@ -15,15 +16,6 @@ import {reportUsage} from './usage'
 
 export async function startBuildKit(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
   console.log('Starting BuildKit')
-
-  // Attempt to set up binfmt
-  try {
-    execa('docker', ['run', '--privileged', '--rm', 'tonistiigi/binfmt', '--install', 'all'], {stdio: 'inherit'}).catch(
-      (err) => {
-        console.error(err)
-      },
-    )
-  } catch {}
 
   if (task.vectorConfig) {
     try {
@@ -147,6 +139,18 @@ ${task.additionalBuildkitdConfig || ''}
     } catch (error) {
       console.error('Unable to use buildkit-private', error)
     }
+  }
+
+  // Register after the buildkit-private copy so binfmt_misc holds the final emulator binaries.
+  try {
+    const registered = await registerQemuEmulators()
+    if (registered.length > 0) {
+      console.log(`Registered QEMU emulators: ${registered.join(', ')}`)
+    } else {
+      console.warn('No QEMU emulators found in /usr/bin, BuildKit will not advertise emulated platforms')
+    }
+  } catch (error) {
+    console.warn(`Unable to register QEMU emulators: ${error instanceof Error ? error.message : error}`)
   }
 
   const controller = new AbortController()

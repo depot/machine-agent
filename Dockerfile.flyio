@@ -13,6 +13,7 @@ RUN dnf upgrade -y && \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# The buildkit release tarball also supplies the /usr/bin/buildkit-qemu-* emulators that machine-agent registers in binfmt_misc.
 RUN mkdir -p /etc/buildkit && \
     curl -L "https://github.com/depot/buildkit/releases/download/${BUILDKIT_VERSION}/buildkit-${BUILDKIT_VERSION}.linux-${TARGETARCH}.tar.gz" | \
     tar -zxv -C /usr/bin --strip-components=1
@@ -36,4 +37,4 @@ RUN mkdir -p /opt/cni/bin/ && \
 
 
 # TODO: install vector
-# TODO: binfmt/dagger engine
+# TODO: dagger engine
