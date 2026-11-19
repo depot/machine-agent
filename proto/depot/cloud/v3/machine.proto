@@ -126,6 +126,10 @@ message RegisterMachineResponse {
     // Cache backend to use for the buildkit cache.
     // By default it will use CACHE_BACKEND_BOLT if unspecified.
     optional CacheBackend cache_backend = 29;
+    // Additional environment variables for BuildKit. Values override inherited
+    // variables and environment values set by other task settings.
+    // An empty map preserves the existing environment.
+    map<string, string> buildkit_env = 32;
     // Age threshold in days for garbage collection of unused build cache. Default: 14.
     optional int32 cache_keep_days = 33;
   }

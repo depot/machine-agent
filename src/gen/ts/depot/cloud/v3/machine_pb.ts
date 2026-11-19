@@ -629,6 +629,15 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
   cacheBackend?: RegisterMachineResponse_BuildKitTask_CacheBackend
 
   /**
+   * Additional environment variables for BuildKit. Values override inherited
+   * variables and environment values set by other task settings.
+   * An empty map preserves the existing environment.
+   *
+   * @generated from field: map<string, string> buildkit_env = 32;
+   */
+  buildkitEnv: {[key: string]: string} = {}
+
+  /**
    * Age threshold in days for garbage collection of unused build cache. Default: 14.
    *
    * @generated from field: optional int32 cache_keep_days = 33;
@@ -682,6 +691,13 @@ export class RegisterMachineResponse_BuildKitTask extends Message<RegisterMachin
       kind: 'enum',
       T: proto3.getEnumType(RegisterMachineResponse_BuildKitTask_CacheBackend),
       opt: true,
+    },
+    {
+      no: 32,
+      name: 'buildkit_env',
+      kind: 'map',
+      K: 9 /* ScalarType.STRING */,
+      V: {kind: 'scalar', T: 9 /* ScalarType.STRING */},
     },
     {no: 33, name: 'cache_keep_days', kind: 'scalar', T: 5 /* ScalarType.INT32 */, opt: true},
   ])

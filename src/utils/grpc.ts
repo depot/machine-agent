@@ -4,6 +4,7 @@ import {MachineService} from '../gen/ts/depot/cloud/v3/machine_connect'
 import {DEPOT_CLOUD_API_HOST, DEPOT_MACHINE_AGENT_VERSION} from './env'
 
 const userAgentInterceptor: Interceptor = (next) => async (req) => {
+  // The API uses the machine-agent/ prefix to preserve this agent's cache behavior.
   req.header.set('User-Agent', `machine-agent/${DEPOT_MACHINE_AGENT_VERSION}`)
   return await next(req)
 }

@@ -152,69 +152,7 @@ ${task.additionalBuildkitdConfig || ''}
   const controller = new AbortController()
   const signal = controller.signal
 
-  const env: Record<string, string> = {
-    BUILDKIT_STEP_LOG_MAX_SIZE: '52428800', // 50 MB
-
-    DEPOT_KEEPALIVE_SERVER_POLICY_PERMIT_WITHOUT_STREAM: 'true',
-    DEPOT_KEEPALIVE_SERVER_POLICY_MINTIME_MS: '120000', // 2 minutes
-    DEPOT_BUILDKIT_TOKEN: token,
-  }
-
-  if (task.traceEndpoint) {
-    env.OTEL_TRACES_EXPORTER = 'otlp'
-    env.OTEL_EXPORTER_OTLP_TRACES_PROTOCOL = 'grpc'
-    env.OTEL_EXPORTER_OTLP_COMPRESSION = 'gzip'
-    env.OTEL_RESOURCE_ATTRIBUTES = `depot.machine.id=${encodeURIComponent(machineId)}`
-    env.OTEL_EXPORTER_OTLP_HEADERS = `Authorization=${encodeURIComponent(`Bearer ${token}`)}`
-    env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = task.traceEndpoint
-  }
-
-  if (task.profiler) {
-    console.log('Enabling profiler')
-    env.PROFILER_ENDPOINT = task.profiler.endpoint
-    env.PROFILER_TOKEN = task.profiler.token
-    env.PROFILER_PROJECT_ID = task.profiler.projectId
-  }
-
-  if (task.disableParallelGzip) {
-    console.log('Disabling parallel gzip')
-    env.DEPOT_DISABLE_PARALLEL_GZIP = '1'
-  }
-
-  if (task.disableMergeTo) {
-    console.log('Disabling merge to')
-    env.DEPOT_DISABLE_MERGE_TO = '1'
-  }
-
-  if (task.enableSchedulerDebug) {
-    console.log('Enabling scheduler debug')
-    env.BUILDKIT_SCHEDULER_DEBUG = '1'
-  }
-
-  if (task.enableContextLogging) {
-    console.log('Enabling context logging')
-    env.DEPOT_CONTEXTLOG_ENABLED = '1'
-  }
-
-  if (task.resolverConcurrency) {
-    console.log(`Setting resolver concurrency to ${task.resolverConcurrency}`)
-    env.DEPOT_RESOLVER_CONCURRENCY = task.resolverConcurrency.toString()
-  }
-
-  if (task.enableGpu) {
-    console.log('Enabling GPU')
-    env.DEPOT_ENABLE_GPU = 'true'
-  }
-
-  if (task.enableSqliteMetadata) {
-    console.log('Enabling sqlite metadata')
-    env.DEPOT_SQLITE_METADATA = '1'
-  }
-
-  if (task.cacheBackend === RegisterMachineResponse_BuildKitTask_CacheBackend.SQLITE) {
-    console.log('Enabling sqlite cache')
-    env.DEPOT_CACHE_DB_BACKEND = 'sqlite'
-  }
+  const env = buildkitEnv(message, task)
 
   const args = task.enableDebugLogging ? ['--debug'] : []
 
@@ -292,6 +230,76 @@ ${task.additionalBuildkitdConfig || ''}
   } finally {
     controller.abort()
   }
+}
+
+export function buildkitEnv(message: RegisterMachineResponse, task: RegisterMachineResponse_BuildKitTask) {
+  const {machineId, token} = message
+
+  const env: Record<string, string> = {
+    BUILDKIT_STEP_LOG_MAX_SIZE: '52428800', // 50 MB
+
+    DEPOT_KEEPALIVE_SERVER_POLICY_PERMIT_WITHOUT_STREAM: 'true',
+    DEPOT_KEEPALIVE_SERVER_POLICY_MINTIME_MS: '120000', // 2 minutes
+    DEPOT_BUILDKIT_TOKEN: token,
+  }
+
+  if (task.traceEndpoint) {
+    env.OTEL_TRACES_EXPORTER = 'otlp'
+    env.OTEL_EXPORTER_OTLP_TRACES_PROTOCOL = 'grpc'
+    env.OTEL_EXPORTER_OTLP_COMPRESSION = 'gzip'
+    env.OTEL_RESOURCE_ATTRIBUTES = `depot.machine.id=${encodeURIComponent(machineId)}`
+    env.OTEL_EXPORTER_OTLP_HEADERS = `Authorization=${encodeURIComponent(`Bearer ${token}`)}`
+    env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = task.traceEndpoint
+  }
+
+  if (task.profiler) {
+    console.log('Enabling profiler')
+    env.PROFILER_ENDPOINT = task.profiler.endpoint
+    env.PROFILER_TOKEN = task.profiler.token
+    env.PROFILER_PROJECT_ID = task.profiler.projectId
+  }
+
+  if (task.disableParallelGzip) {
+    console.log('Disabling parallel gzip')
+    env.DEPOT_DISABLE_PARALLEL_GZIP = '1'
+  }
+
+  if (task.disableMergeTo) {
+    console.log('Disabling merge to')
+    env.DEPOT_DISABLE_MERGE_TO = '1'
+  }
+
+  if (task.enableSchedulerDebug) {
+    console.log('Enabling scheduler debug')
+    env.BUILDKIT_SCHEDULER_DEBUG = '1'
+  }
+
+  if (task.enableContextLogging) {
+    console.log('Enabling context logging')
+    env.DEPOT_CONTEXTLOG_ENABLED = '1'
+  }
+
+  if (task.resolverConcurrency) {
+    console.log(`Setting resolver concurrency to ${task.resolverConcurrency}`)
+    env.DEPOT_RESOLVER_CONCURRENCY = task.resolverConcurrency.toString()
+  }
+
+  if (task.enableGpu) {
+    console.log('Enabling GPU')
+    env.DEPOT_ENABLE_GPU = 'true'
+  }
+
+  if (task.enableSqliteMetadata) {
+    console.log('Enabling sqlite metadata')
+    env.DEPOT_SQLITE_METADATA = '1'
+  }
+
+  if (task.cacheBackend === RegisterMachineResponse_BuildKitTask_CacheBackend.SQLITE) {
+    console.log('Enabling sqlite cache')
+    env.DEPOT_CACHE_DB_BACKEND = 'sqlite'
+  }
+
+  return {...env, ...task.buildkitEnv}
 }
 
 async function shutdown(rootDir: string, task: RegisterMachineResponse_BuildKitTask, headers: HeadersInit) {
