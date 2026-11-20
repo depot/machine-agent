@@ -1,8 +1,9 @@
 import {Code, ConnectError} from '@connectrpc/connect'
+import {isBootRaceFlyTokenError} from './utils/fly'
 
 const RETRY_DELAY_MS = 1_000
-const REGISTER_REJECTION_REPORT_ATTEMPTS = 20
-const REGISTER_REJECTION_REPORT_INTERVAL_MS = 5 * 60 * 1_000
+const RETRYABLE_FAILURE_REPORT_ATTEMPTS = 20
+const RETRYABLE_FAILURE_REPORT_INTERVAL_MS = 5 * 60 * 1_000
 
 interface RegisterRetryOptions {
   runLoop: () => Promise<void>
@@ -19,29 +20,29 @@ export async function runRegisterLoopWithRetry({
   sleep,
   now = Date.now,
 }: RegisterRetryOptions) {
-  let consecutiveRegisterRejections = 0
-  let lastRegisterRejectionReportAt: number | undefined
+  let consecutiveRetryableFailures = 0
+  let lastRetryableFailureReportAt: number | undefined
 
   while (true) {
     try {
       await runLoop()
       return
     } catch (error) {
-      if (isMissingInstanceID(error)) {
-        consecutiveRegisterRejections++
+      if (isRetryableBootFailure(error)) {
+        consecutiveRetryableFailures++
         const currentTime = now()
-        const reachedReportThreshold = consecutiveRegisterRejections === REGISTER_REJECTION_REPORT_ATTEMPTS
+        const reachedReportThreshold = consecutiveRetryableFailures === RETRYABLE_FAILURE_REPORT_ATTEMPTS
         const reportIntervalElapsed =
-          lastRegisterRejectionReportAt !== undefined &&
-          currentTime - lastRegisterRejectionReportAt >= REGISTER_REJECTION_REPORT_INTERVAL_MS
+          lastRetryableFailureReportAt !== undefined &&
+          currentTime - lastRetryableFailureReportAt >= RETRYABLE_FAILURE_REPORT_INTERVAL_MS
 
         if (reachedReportThreshold || reportIntervalElapsed) {
           captureException(error)
-          lastRegisterRejectionReportAt = currentTime
+          lastRetryableFailureReportAt = currentTime
         }
       } else {
-        consecutiveRegisterRejections = 0
-        lastRegisterRejectionReportAt = undefined
+        consecutiveRetryableFailures = 0
+        lastRetryableFailureReportAt = undefined
         captureException(error)
       }
 
@@ -51,7 +52,11 @@ export async function runRegisterLoopWithRetry({
   }
 }
 
-function isMissingInstanceID(error: unknown) {
+function isRetryableBootFailure(error: unknown) {
+  if (isBootRaceFlyTokenError(error)) {
+    return true
+  }
+
   return (
     error instanceof ConnectError && error.code === Code.InvalidArgument && error.rawMessage === 'Missing instance ID'
   )
