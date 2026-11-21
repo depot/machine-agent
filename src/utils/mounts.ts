@@ -180,15 +180,25 @@ export async function mountExecutor(rootDir: string) {
 }
 
 async function waitForDevice(device: string) {
+  console.log(`Waiting for ${device} to exist`)
+  const start = Date.now()
+  let lastLog = start
   while (true) {
     try {
-      console.log(`Waiting for ${device} to exist`)
       const stat = await fsp.stat(device)
-      if (stat.isBlockDevice()) return
-      await sleep(500)
+      if (stat.isBlockDevice()) {
+        console.log(`Device ${device} exists`)
+        return
+      }
     } catch (err: any) {
       if (err.code !== 'ENOENT') throw err
     }
+
+    if (Date.now() - lastLog >= 60_000) {
+      lastLog = Date.now()
+      console.log(`Still waiting for ${device} to exist (${Math.round((lastLog - start) / 1000)}s elapsed)`)
+    }
+    await sleep(500)
   }
 }
 
