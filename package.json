@@ -22,7 +22,7 @@
     "abort-controller-x": "^0.4.3",
     "execa": "^7.2.0",
     "node-graceful-shutdown": "^1.1.5",
-    "undici": "^5.28.4"
+    "undici": "^6.29.1"
   },
   "devDependencies": {
     "@bufbuild/protoc-gen-es": "^1.10.0",
@@ -36,6 +36,11 @@
     "prettier-plugin-organize-imports": "^3.2.3",
     "prettier-plugin-pkg": "^0.18.0",
     "typescript": "^5.1.6"
+  },
+  "pnpm": {
+    "overrides": {
+      "@connectrpc/connect-node>undici": "6.29.1"
+    }
   },
   "prettier": {
     "bracketSpacing": false,

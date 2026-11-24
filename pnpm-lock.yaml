@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@connectrpc/connect-node>undici': 6.29.1
+
 importers:
 
   .:
@@ -33,8 +36,8 @@ importers:
         specifier: ^1.1.5
         version: 1.1.5
       undici:
-        specifier: ^5.28.4
-        version: 5.28.4
+        specifier: ^6.29.1
+        version: 6.29.1
     devDependencies:
       '@bufbuild/protoc-gen-es':
         specifier: ^1.10.0
@@ -306,10 +309,6 @@ packages:
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
-
-  '@fastify/busboy@2.0.0':
-    resolution: {integrity: sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==}
-    engines: {node: '>=14'}
 
   '@jridgewell/gen-mapping@0.3.3':
     resolution: {integrity: sha512-HLhSWOLRi875zjjMG/r+Nv0oCW8umGb0BgEhyX3dDX3egwZtB8PqLnjz3yedt8R5StBrzcg4aBpnh8UA9D1BoQ==}
@@ -881,9 +880,9 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  undici@5.28.4:
-    resolution: {integrity: sha512-72RFADWFqKmUb2hmmvNODKL3p9hcB6Gt2DOQMis1SEBaV6a4MH8soBvzg+95CYhCKPFedut2JY9bMfrDl9D23g==}
-    engines: {node: '>=14.0'}
+  undici@6.29.1:
+    resolution: {integrity: sha512-EvRlUt/QqAEvXdQeRMYUfwOQsfzpDztykrG2owGEE/rBOBoYv9uF39ZzsNDh4lTFHhTr2XOZjKkYgueD12ZmGA==}
+    engines: {node: '>=18.17'}
 
   universalify@2.0.0:
     resolution: {integrity: sha512-hAZsKq7Yy11Zu1DE0OzWjw7nnLZmJZYTDZZyEFHZdUhV8FkH5MCfoU1XMaxXovpyW5nq5scPqq0ZDP9Zyl04oQ==}
@@ -996,7 +995,7 @@ snapshots:
     dependencies:
       '@bufbuild/protobuf': 1.10.0
       '@connectrpc/connect': 1.4.0(@bufbuild/protobuf@1.10.0)
-      undici: 5.28.4
+      undici: 6.29.1
 
   '@connectrpc/connect@1.4.0(@bufbuild/protobuf@1.10.0)':
     dependencies:
@@ -1077,8 +1076,6 @@ snapshots:
 
   '@esbuild/win32-x64@0.19.2':
     optional: true
-
-  '@fastify/busboy@2.0.0': {}
 
   '@jridgewell/gen-mapping@0.3.3':
     dependencies:
@@ -1667,9 +1664,7 @@ snapshots:
 
   typescript@5.1.6: {}
 
-  undici@5.28.4:
-    dependencies:
-      '@fastify/busboy': 2.0.0
+  undici@6.29.1: {}
 
   universalify@2.0.0: {}
 
