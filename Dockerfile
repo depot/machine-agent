@@ -1,4 +1,4 @@
-FROM node:18 AS build
+FROM node:22 AS build
 
 ENV PKG_CACHE_PATH=/tmp/pkg-cache
 WORKDIR /app
